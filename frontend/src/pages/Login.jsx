@@ -1,62 +1,109 @@
-import { useState } from 'react'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
 
-    // 👉 暂时是假登录（Hackathon 阶段）
-    setTimeout(() => {
-      if (email && password) {
-        localStorage.setItem('token', 'fake-jwt-token')
-        window.location.href = '/'
-      } else {
-        setError('Please enter email and password')
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (Array.isArray(data.errors) && data.errors.length > 0) {
+          setError(data.errors[0].msg || 'Login failed.');
+        } else {
+          setError(data.error || 'Login failed.');
+        }
+        return;
       }
-      setLoading(false)
-    }, 800)
-  }
+
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      navigate('/');
+    } catch {
+      setError('Cannot connect to server. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-8 rounded-xl shadow-md w-80 space-y-4"
-      >
-        <h1 className="text-2xl font-bold text-center">FlashGather</h1>
+    <section className="login-page">
+      <div className="login-card">
+        <div className="login-top">
+          <p className="login-kicker">Welcome back</p>
+          <h1 className="login-title">Sign in to FlashGather</h1>
+          <p className="login-subtitle">Use your account to continue.</p>
+        </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full border rounded px-3 py-2"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-        />
+        <form onSubmit={handleSubmit} className="login-form">
+          <label htmlFor="email" className="login-label">
+            Email
+          </label>
+          <div className="login-input-wrap">
+            <input
+              className="login-input"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
+          </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border rounded px-3 py-2"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
+          <label htmlFor="password" className="login-label">
+            Password
+          </label>
+          <div className="login-input-wrap">
+            <input
+              className="login-input"
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="login-toggle"
+              onClick={() => setShowPassword((value) => !value)}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error ? <p className="login-error">{error}</p> : null}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded"
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-    </div>
-  )
+          <button type="submit" disabled={isLoading} className="login-submit">
+            {isLoading ? 'Signing in...' : 'Login'}
+          </button>
+        </form>
+      </div>
+    </section>
+  );
 }
