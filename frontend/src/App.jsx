@@ -12,8 +12,8 @@ import "leaflet/dist/leaflet.css";
 import Layout from "./pages/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import { API_BASE } from "./config";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const DEFAULT_MAP_CENTER = { lat: 3.139, lng: 101.6869 };
 const OSM_TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 const OSM_TILE_ATTRIBUTION = "&copy; OpenStreetMap contributors";

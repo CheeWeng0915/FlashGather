@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE } from '../config';
 import './Login.css';
 
 export default function Register() {
@@ -13,8 +14,6 @@ export default function Register() {
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const handleSubmit = async (event) => {
     event.preventDefault();
