@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 
 const menuItems = [
   { to: '/', label: 'Home' },
+  { to: '/new-event', label: 'New Event' },
   { to: '/login', label: 'Login' },
   { to: '/register', label: 'Register' }
 ];
