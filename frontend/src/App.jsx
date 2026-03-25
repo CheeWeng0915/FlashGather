@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import EventDetail from "./pages/EventDetail";
 import Layout from "./pages/Layout";
 import Login from "./pages/Login";
 import NewEvent from "./pages/NewEvent";
 import Register from "./pages/Register";
 import { API_BASE } from "./config";
+import { getAuthHeaders, hasStoredUserSession } from "./utils/auth";
 
 const formatEventTime = (value) => {
   if (!value) {
@@ -190,6 +191,14 @@ function EventList({ events, onRefresh, onEdit, onDelete }) {
   );
 }
 
+function RequireAuth({ children }) {
+  if (!hasStoredUserSession()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
 function HomePage() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
@@ -197,7 +206,9 @@ function HomePage() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch(`${API_BASE}/events`);
+      const res = await fetch(`${API_BASE}/events`, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) {
         throw new Error("Failed to fetch events");
       }
@@ -232,6 +243,7 @@ function HomePage() {
     try {
       const response = await fetch(`${API_BASE}/events/${eventId}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -294,9 +306,30 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/new-event" element={<NewEvent />} />
-        <Route path="/events/:eventId" element={<EventDetail />} />
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <HomePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/new-event"
+          element={
+            <RequireAuth>
+              <NewEvent />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/events/:eventId"
+          element={
+            <RequireAuth>
+              <EventDetail />
+            </RequireAuth>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>

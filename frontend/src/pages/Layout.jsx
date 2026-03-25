@@ -1,18 +1,32 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { clearStoredUserSession, hasStoredUserSession } from '../utils/auth';
 
 const menuItems = [
-  { to: '/', label: 'Home' },
-  { to: '/new-event', label: 'New Event' },
-  { to: '/login', label: 'Login' },
-  { to: '/register', label: 'Register' }
+  { to: '/', label: 'Home', requiresAuth: true },
+  { to: '/new-event', label: 'New Event', requiresAuth: true },
+  { to: '/login', label: 'Login', guestOnly: true },
+  { to: '/register', label: 'Register', guestOnly: true }
 ];
 
 export default function Layout() {
+  const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => hasStoredUserSession());
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (item.requiresAuth) {
+      return isAuthenticated;
+    }
+
+    if (item.guestOnly) {
+      return !isAuthenticated;
+    }
+
+    return true;
+  });
 
   useEffect(() => {
     const onResize = () => {
@@ -26,6 +40,26 @@ export default function Layout() {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  useEffect(() => {
+    setIsAuthenticated(hasStoredUserSession());
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const syncAuthState = () => {
+      setIsAuthenticated(hasStoredUserSession());
+    };
+
+    window.addEventListener('storage', syncAuthState);
+    return () => window.removeEventListener('storage', syncAuthState);
+  }, []);
+
+  const handleLogout = () => {
+    clearStoredUserSession();
+    setIsAuthenticated(false);
+    setIsSidebarOpen(false);
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div style={styles.shell}>
@@ -67,7 +101,7 @@ export default function Layout() {
           }}
         >
           <nav style={styles.menu}>
-            {menuItems.map((item) => (
+            {visibleMenuItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -80,6 +114,16 @@ export default function Layout() {
                 {item.label}
               </NavLink>
             ))}
+
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{ ...styles.menuLink, ...styles.menuButtonAction }}
+              >
+                Logout
+              </button>
+            ) : null}
           </nav>
         </aside>
 
@@ -198,6 +242,14 @@ const styles = {
     borderRadius: '8px',
     fontWeight: 600,
     fontSize: '0.92rem'
+  },
+  menuButtonAction: {
+    border: 0,
+    width: '100%',
+    backgroundColor: '#fee2e2',
+    color: '#b91c1c',
+    textAlign: 'left',
+    cursor: 'pointer'
   },
   menuLinkActive: {
     backgroundColor: '#e2e8f0',

@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
+import {
+  TOKEN_STORAGE_KEY,
+  USER_STORAGE_KEY,
+  clearStoredUserSession,
+  hasStoredUserSession
+} from '../utils/auth';
 import './Login.css';
-
-const TOKEN_STORAGE_KEY = 'token';
-const USER_STORAGE_KEY = 'currentUser';
 
 const getErrorMessage = (payload, fallbackMessage) => {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -16,22 +19,6 @@ const getErrorMessage = (payload, fallbackMessage) => {
   }
 
   return fallbackMessage;
-};
-
-const hasStoredUserSession = () => {
-  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-
-  if (!token || !storedUser) {
-    return false;
-  }
-
-  try {
-    const parsedUser = JSON.parse(storedUser);
-    return Boolean(parsedUser?.id || parsedUser?.email || parsedUser?.username);
-  } catch {
-    return false;
-  }
 };
 
 export default function Login() {
@@ -50,8 +37,7 @@ export default function Login() {
     }
 
     // Clean up stale token-only state so the login page stays usable.
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-    localStorage.removeItem(USER_STORAGE_KEY);
+    clearStoredUserSession();
   }, [navigate]);
 
   const handleSubmit = async (event) => {

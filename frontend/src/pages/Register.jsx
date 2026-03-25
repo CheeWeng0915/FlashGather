@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
+import { clearStoredUserSession, hasStoredUserSession } from '../utils/auth';
 import './Register.css';
-
-const TOKEN_STORAGE_KEY = 'token';
-const USER_STORAGE_KEY = 'currentUser';
 
 const getErrorMessage = (payload, fallbackMessage) => {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -16,22 +14,6 @@ const getErrorMessage = (payload, fallbackMessage) => {
   }
 
   return fallbackMessage;
-};
-
-const hasStoredUserSession = () => {
-  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-
-  if (!token || !storedUser) {
-    return false;
-  }
-
-  try {
-    const parsedUser = JSON.parse(storedUser);
-    return Boolean(parsedUser?.id || parsedUser?.email || parsedUser?.username);
-  } catch {
-    return false;
-  }
 };
 
 export default function Register() {
@@ -107,8 +89,7 @@ export default function Register() {
 
       // Registration should send the user to the login screen, not leave behind
       // a partial session that makes the auth flow inconsistent.
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-      localStorage.removeItem(USER_STORAGE_KEY);
+      clearStoredUserSession();
 
       setSuccess('Account created successfully. Redirecting to login...');
       setUsername('');

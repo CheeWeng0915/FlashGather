@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import EventForm from "../components/EventForm";
 import { API_BASE } from "../config";
+import { getAuthHeaders } from "../utils/auth";
 
 const readApiError = async (response, fallbackMessage) => {
   let errorMessage = fallbackMessage;
@@ -26,7 +27,7 @@ export default function NewEvent() {
   const createEvent = async (payload) => {
     const response = await fetch(`${API_BASE}/events`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(payload),
     });
 

@@ -16,7 +16,8 @@ const OSM_TILE_ATTRIBUTION = "&copy; OpenStreetMap contributors";
 const EMPTY_FORM = {
   title: "",
   description: "",
-  time: "",
+  eventDate: "",
+  eventTime: "",
   location: "",
   capacity: "",
   lat: null,
@@ -81,24 +82,39 @@ const toNullableNumber = (value) => {
   return Number.isNaN(numberValue) ? null : numberValue;
 };
 
-const toEditableTime = (value) => {
+const toEditableDate = (value) => {
   if (!value) {
     return "";
   }
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return String(value);
+    return "";
   }
 
   const pad = (part) => String(part).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+const toEditableClockTime = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const pad = (part) => String(part).padStart(2, "0");
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 const buildFormState = (initialValues) => ({
   title: initialValues?.title ?? EMPTY_FORM.title,
   description: initialValues?.description ?? EMPTY_FORM.description,
-  time: toEditableTime(initialValues?.time),
+  eventDate: toEditableDate(initialValues?.time),
+  eventTime: toEditableClockTime(initialValues?.time),
   location: initialValues?.location ?? EMPTY_FORM.location,
   capacity:
     initialValues?.capacity === null || initialValues?.capacity === undefined
@@ -107,6 +123,25 @@ const buildFormState = (initialValues) => ({
   lat: toNullableNumber(initialValues?.lat),
   lng: toNullableNumber(initialValues?.lng),
 });
+
+const openNativePicker = (input) => {
+  if (!input) {
+    return;
+  }
+
+  input.focus();
+
+  if (typeof input.showPicker === "function") {
+    try {
+      input.showPicker();
+      return;
+    } catch {
+      // Fall back to click for browsers that block showPicker.
+    }
+  }
+
+  input.click();
+};
 
 function LocationPicker({ position, onPick }) {
   useMapEvents({
@@ -139,6 +174,8 @@ export default function EventForm({
   onSubmit,
   onSuccess = () => {},
 }) {
+  const dateInputRef = useRef(null);
+  const timeInputRef = useRef(null);
   const locationBoxRef = useRef(null);
   const searchCacheRef = useRef(new Map());
   const reverseCacheRef = useRef(new Map());
@@ -401,12 +438,24 @@ export default function EventForm({
 
   const submit = async (event) => {
     event.preventDefault();
+
+    if (
+      (form.eventDate && !form.eventTime) ||
+      (!form.eventDate && form.eventTime)
+    ) {
+      alert("Please select both a date and a time.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const payload = {
       title: form.title.trim(),
       description: form.description,
-      time: form.time || null,
+      time:
+        form.eventDate && form.eventTime
+          ? `${form.eventDate}T${form.eventTime}`
+          : null,
       location: form.location,
       lat: form.lat,
       lng: form.lng,
@@ -472,16 +521,81 @@ export default function EventForm({
             <label className="block text-sm font-semibold text-slate-900">
               Date & Time
             </label>
-            <div className="relative mt-2">
-              <input
-                type="text"
-                className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                placeholder="2026-02-14 19:00"
-                value={form.time}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, time: event.target.value }))
-                }
-              />
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              <div>
+                <div className="relative">
+                  <input
+                    ref={dateInputRef}
+                    type="date"
+                    className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                    placeholder="01-JAN-99"
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        eventDate: event.target.value,
+                      }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    aria-label="Open date picker"
+                    onClick={() => openNativePicker(dateInputRef.current)}
+                    className="absolute inset-y-1.5 right-1.5 inline-flex w-10 items-center justify-center rounded-md border-0 bg-emerald-50 text-emerald-700 transition-colors hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div className="relative">
+                  <input
+                    ref={timeInputRef}
+                    type="time"
+                    step="60"
+                    className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                    placeholder="12:30 AM"
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        eventTime: event.target.value,
+                      }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    aria-label="Open time picker"
+                    onClick={() => openNativePicker(timeInputRef.current)}
+                    className="absolute inset-y-1.5 right-1.5 inline-flex w-10 items-center justify-center rounded-md border-0 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -520,7 +634,7 @@ export default function EventForm({
                   <li key={`${item.lat}-${item.lng}-${item.label}`}>
                     <button
                       type="button"
-                      className="w-full rounded-md px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-100"
+                      className="w-full rounded-md border-0 bg-white px-3 py-2 text-left text-xs text-slate-700 shadow-none transition-colors hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                       onClick={() => applyLocationSuggestion(item)}
                     >
                       {item.label}
