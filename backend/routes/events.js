@@ -2,8 +2,11 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const Event = require('../models/Event');
+const requireAuth = require('../middleware/auth');
 
 const router = express.Router();
+
+router.use(requireAuth);
 
 const createValidators = [
   body('title').trim().notEmpty().withMessage('Title is required'),
@@ -109,7 +112,7 @@ const normalizePayload = (input) => {
 
 router.get('/', async (req, res) => {
   try {
-    const events = await Event.find().sort({ createdAt: -1 });
+    const events = await Event.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(events);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -122,7 +125,7 @@ router.get('/:id', async (req, res) => {
   }
 
   try {
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findOne({ _id: req.params.id, userId: req.user.id });
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
@@ -139,6 +142,8 @@ router.post('/', createValidators, async (req, res) => {
 
   try {
     const payload = normalizePayload(req.body);
+    payload.userId = req.user.id;
+    payload.createdBy = req.user.id;
     const created = await Event.create(payload);
     return res.status(201).json(created);
   } catch (error) {
@@ -156,7 +161,7 @@ router.put('/:id', updateValidators, async (req, res) => {
 
   try {
     const payload = normalizePayload(req.body);
-    const updated = await Event.findByIdAndUpdate(req.params.id, payload, {
+    const updated = await Event.findOneAndUpdate({ _id: req.params.id, userId: req.user.id }, payload, {
       new: true,
       runValidators: true
     });
@@ -175,7 +180,7 @@ router.delete('/:id', async (req, res) => {
   }
 
   try {
-    const deleted = await Event.findByIdAndDelete(req.params.id);
+    const deleted = await Event.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
     if (!deleted) {
       return res.status(404).json({ error: 'Event not found' });
     }

@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
+import {
+  TOKEN_STORAGE_KEY,
+  USER_STORAGE_KEY,
+  clearStoredUserSession,
+  hasStoredUserSession
+} from '../utils/auth';
 import './Login.css';
-
-const TOKEN_STORAGE_KEY = 'token';
-const USER_STORAGE_KEY = 'currentUser';
 
 const getErrorMessage = (payload, fallbackMessage) => {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -16,22 +19,6 @@ const getErrorMessage = (payload, fallbackMessage) => {
   }
 
   return fallbackMessage;
-};
-
-const hasStoredUserSession = () => {
-  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-
-  if (!token || !storedUser) {
-    return false;
-  }
-
-  try {
-    const parsedUser = JSON.parse(storedUser);
-    return Boolean(parsedUser?.id || parsedUser?.email || parsedUser?.username);
-  } catch {
-    return false;
-  }
 };
 
 export default function Login() {
@@ -50,8 +37,7 @@ export default function Login() {
     }
 
     // Clean up stale token-only state so the login page stays usable.
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-    localStorage.removeItem(USER_STORAGE_KEY);
+    clearStoredUserSession();
   }, [navigate]);
 
   const handleSubmit = async (event) => {
@@ -123,67 +109,101 @@ export default function Login() {
 
   return (
     <section className="login-page">
-      <div className="login-card">
-        <div className="login-top">
-          <p className="login-kicker">Welcome back</p>
-          <h1 className="login-title">Sign in to FlashGather</h1>
-          <p className="login-subtitle">Use your account to continue.</p>
+      <div className="login-shell">
+        <aside className="login-side">
+          <div className="login-brand">
+            <span className="login-brand-mark">FG</span>
+            <span>FlashGather</span>
+          </div>
+
+          <div className="login-side-copy">
+            <p className="login-side-kicker">New around here?</p>
+            <h1 className="login-side-title">Join the Crew</h1>
+            <p className="login-side-text">
+              Create your account to plan events, gather friends, and keep
+              every meetup in one place.
+            </p>
+          </div>
+
+          <Link to="/register" className="login-side-button">
+            Sign Up
+          </Link>
+        </aside>
+
+        <div className="login-card">
+          <div className="login-card-inner">
+            <header className="login-header">
+              <p className="login-title">Sign In</p>
+            </header>
+
+            <form onSubmit={handleSubmit} className="login-form">
+              <label className="login-field" htmlFor="email">
+                <span className="login-field-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M4 6h16v12H4V6zm0 0l8 6 8-6"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <input
+                  className="login-input"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="Email"
+                  autoComplete="email"
+                  required
+                  disabled={isLoading}
+                />
+              </label>
+
+              <label className="login-field" htmlFor="password">
+                <span className="login-field-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M7 11V8a5 5 0 1110 0v3m-9 0h8a2 2 0 012 2v5H6v-5a2 2 0 012-2z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <input
+                  className="login-input"
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Password"
+                  autoComplete="current-password"
+                  required
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  className="login-toggle"
+                  onClick={() => setShowPassword((value) => !value)}
+                  disabled={isLoading}
+                >
+                  {showPassword ? '👁' : '⌣'}
+                </button>
+              </label>
+
+              {error ? <p className="login-message login-error">{error}</p> : null}
+              {success ? <p className="login-message login-success">{success}</p> : null}
+
+              <button type="submit" disabled={isLoading} className="login-submit">
+                {isLoading ? 'Signing In...' : 'Sign In'}
+              </button>
+            </form>
+          </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="login-form">
-          <label htmlFor="email" className="login-label">
-            Email
-          </label>
-          <div className="login-input-wrap">
-            <input
-              className="login-input"
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              autoComplete="email"
-              required
-              disabled={isLoading}
-            />
-          </div>
-
-          <label htmlFor="password" className="login-label">
-            Password
-          </label>
-          <div className="login-input-wrap">
-            <input
-              className="login-input"
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              required
-              disabled={isLoading}
-            />
-            <button
-              type="button"
-              className="login-toggle"
-              onClick={() => setShowPassword((value) => !value)}
-              disabled={isLoading}
-            >
-              {showPassword ? 'Hide' : 'Show'}
-            </button>
-          </div>
-
-          {error ? <p className="login-error">{error}</p> : null}
-          {success ? <p className="login-success">{success}</p> : null}
-
-          <button type="submit" disabled={isLoading} className="login-submit">
-            {isLoading ? 'Signing in...' : 'Login'}
-          </button>
-        </form>
-
-        <p className="login-subtitle">
-          New here? <Link to="/register">Create an account</Link>
-        </p>
       </div>
     </section>
   );

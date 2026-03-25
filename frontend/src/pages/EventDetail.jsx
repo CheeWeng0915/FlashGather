@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import EventForm from "../components/EventForm";
 import { API_BASE } from "../config";
+import { getAuthHeaders } from "../utils/auth";
 
 const readApiError = async (response, fallbackMessage) => {
   let errorMessage = fallbackMessage;
@@ -37,6 +38,7 @@ export default function EventDetail() {
 
       try {
         const response = await fetch(`${API_BASE}/events/${eventId}`, {
+          headers: getAuthHeaders(),
           signal: controller.signal,
         });
 
@@ -65,7 +67,7 @@ export default function EventDetail() {
   const updateEvent = async (payload) => {
     const response = await fetch(`${API_BASE}/events/${eventId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(payload),
     });
 

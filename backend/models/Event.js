@@ -41,6 +41,12 @@ const EventSchema = new mongoose.Schema(
       min: 1,
       default: null
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true
+    },
     rsvps: [
       {
         type: mongoose.Schema.Types.ObjectId,

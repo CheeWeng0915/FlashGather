@@ -1,16 +1,32 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { clearStoredUserSession, hasStoredUserSession } from '../utils/auth';
 
 const menuItems = [
-  { to: '/', label: 'Home' },
-  { to: '/new-event', label: 'New Event' },
-  { to: '/login', label: 'Login' },
-  { to: '/register', label: 'Register' }
+  { to: '/', label: 'Home', requiresAuth: true },
+  { to: '/new-event', label: 'New Event', requiresAuth: true },
+  { to: '/login', label: 'Login', guestOnly: true },
+  { to: '/register', label: 'Register', guestOnly: true }
 ];
 
 export default function Layout() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => hasStoredUserSession());
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (item.requiresAuth) {
+      return isAuthenticated;
+    }
+
+    if (item.guestOnly) {
+      return !isAuthenticated;
+    }
+
+    return true;
+  });
 
   useEffect(() => {
     const onResize = () => {
@@ -24,6 +40,26 @@ export default function Layout() {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  useEffect(() => {
+    setIsAuthenticated(hasStoredUserSession());
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const syncAuthState = () => {
+      setIsAuthenticated(hasStoredUserSession());
+    };
+
+    window.addEventListener('storage', syncAuthState);
+    return () => window.removeEventListener('storage', syncAuthState);
+  }, []);
+
+  const handleLogout = () => {
+    clearStoredUserSession();
+    setIsAuthenticated(false);
+    setIsSidebarOpen(false);
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div style={styles.shell}>
@@ -65,7 +101,7 @@ export default function Layout() {
           }}
         >
           <nav style={styles.menu}>
-            {menuItems.map((item) => (
+            {visibleMenuItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -78,10 +114,20 @@ export default function Layout() {
                 {item.label}
               </NavLink>
             ))}
+
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{ ...styles.menuLink, ...styles.menuButtonAction }}
+              >
+                Logout
+              </button>
+            ) : null}
           </nav>
         </aside>
 
-        <main style={styles.main}>
+        <main style={{ ...styles.main, ...(isAuthPage ? styles.mainAuth : null) }}>
           <Outlet />
         </main>
       </div>
@@ -95,11 +141,13 @@ export default function Layout() {
 
 const styles = {
   shell: {
-    minHeight: '100vh',
+    height: '100dvh',
+    minHeight: '100dvh',
     display: 'grid',
-    gridTemplateRows: '64px 1fr 48px',
+    gridTemplateRows: '60px minmax(0, 1fr) 42px',
     backgroundColor: '#f8fafc',
-    color: '#0f172a'
+    color: '#0f172a',
+    overflow: 'hidden'
   },
   header: {
     borderBottom: '1px solid #e2e8f0',
@@ -109,10 +157,10 @@ const styles = {
     zIndex: 40
   },
   headerInner: {
-    maxWidth: '1200px',
+    maxWidth: '1160px',
     height: '100%',
     margin: '0 auto',
-    padding: '0 16px',
+    padding: '0 14px',
     display: 'flex',
     alignItems: 'center',
     gap: '10px'
@@ -137,15 +185,16 @@ const styles = {
     textDecoration: 'none',
     color: '#0f172a',
     fontWeight: 800,
-    fontSize: '1.05rem'
+    fontSize: '1rem'
   },
   body: {
     display: 'grid',
     minHeight: 0,
-    position: 'relative'
+    position: 'relative',
+    overflow: 'hidden'
   },
   bodyDesktop: {
-    gridTemplateColumns: '260px 1fr'
+    gridTemplateColumns: '232px minmax(0, 1fr)'
   },
   bodyMobile: {
     gridTemplateColumns: '1fr'
@@ -160,9 +209,10 @@ const styles = {
   sidebar: {
     borderRight: '1px solid #e2e8f0',
     backgroundColor: '#ffffff',
-    padding: '16px',
+    padding: '14px',
     zIndex: 35,
-    transition: 'transform 0.2s ease'
+    transition: 'transform 0.2s ease',
+    overflowY: 'auto'
   },
   sidebarDesktop: {
     position: 'relative',
@@ -170,10 +220,10 @@ const styles = {
   },
   sidebarMobile: {
     position: 'fixed',
-    top: '64px',
+    top: '60px',
     left: 0,
-    width: '260px',
-    height: 'calc(100vh - 64px)'
+    width: '232px',
+    height: 'calc(100dvh - 60px)'
   },
   sidebarOpen: {
     transform: 'translateX(0)'
@@ -188,18 +238,31 @@ const styles = {
   menuLink: {
     textDecoration: 'none',
     color: '#334155',
-    padding: '10px 12px',
+    padding: '9px 11px',
     borderRadius: '8px',
     fontWeight: 600,
-    fontSize: '0.95rem'
+    fontSize: '0.92rem'
+  },
+  menuButtonAction: {
+    border: 0,
+    width: '100%',
+    backgroundColor: '#fee2e2',
+    color: '#b91c1c',
+    textAlign: 'left',
+    cursor: 'pointer'
   },
   menuLinkActive: {
     backgroundColor: '#e2e8f0',
     color: '#0f172a'
   },
   main: {
-    padding: '20px 16px',
-    minWidth: 0
+    padding: '14px',
+    minWidth: 0,
+    minHeight: 0,
+    overflowY: 'auto'
+  },
+  mainAuth: {
+    padding: 0
   },
   footer: {
     borderTop: '1px solid #e2e8f0',
@@ -208,6 +271,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '0 16px'
+    padding: '0 14px',
+    fontSize: '0.82rem'
   }
 };
