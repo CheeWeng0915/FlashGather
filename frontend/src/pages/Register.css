@@ -1,8 +1,8 @@
-.login-page {
-  --login-accent: #2ec4b6;
-  --login-accent-deep: #149d9f;
-  --login-ink: #1d2a44;
-  --login-muted: #7d889d;
+.register-page {
+  --register-accent: #2ec4b6;
+  --register-accent-deep: #149d9f;
+  --register-ink: #1d2a44;
+  --register-muted: #7d889d;
   width: 100%;
   min-height: 100%;
   box-sizing: border-box;
@@ -11,18 +11,19 @@
   padding: 24px;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, #f8fbfc 0%, #eef4f8 100%);
+  background:
+    linear-gradient(180deg, #f8fbfc 0%, #eef4f8 100%);
 }
 
-.login-page::before,
-.login-page::after {
+.register-page::before,
+.register-page::after {
   content: '';
   position: absolute;
   z-index: 0;
   pointer-events: none;
 }
 
-.login-page::before {
+.register-page::before {
   width: 320px;
   height: 320px;
   right: -120px;
@@ -31,7 +32,7 @@
   clip-path: polygon(100% 0, 0 0, 100% 100%);
 }
 
-.login-page::after {
+.register-page::after {
   width: 260px;
   height: 260px;
   left: -110px;
@@ -40,7 +41,7 @@
   background: radial-gradient(circle at center, rgba(255, 204, 72, 0.92) 0%, rgba(255, 204, 72, 0.74) 60%, transparent 62%);
 }
 
-.login-shell {
+.register-shell {
   position: relative;
   z-index: 1;
   width: min(980px, 100%);
@@ -55,7 +56,7 @@
   backdrop-filter: blur(18px);
 }
 
-.login-side {
+.register-side {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -63,18 +64,19 @@
   gap: 28px;
   padding: 30px 28px;
   color: #ffffff;
-  background: linear-gradient(160deg, #27b9c4 0%, #34c3a7 52%, #58cf92 100%);
+  background:
+    linear-gradient(160deg, #27b9c4 0%, #34c3a7 52%, #58cf92 100%);
 }
 
-.login-side::before,
-.login-side::after {
+.register-side::before,
+.register-side::after {
   content: '';
   position: absolute;
   pointer-events: none;
   opacity: 0.18;
 }
 
-.login-side::before {
+.register-side::before {
   width: 240px;
   height: 240px;
   left: -120px;
@@ -83,7 +85,7 @@
   background: rgba(255, 255, 255, 0.34);
 }
 
-.login-side::after {
+.register-side::after {
   width: 120px;
   height: 120px;
   right: -22px;
@@ -93,7 +95,7 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-.login-brand {
+.register-brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -101,7 +103,7 @@
   font-weight: 700;
 }
 
-.login-brand-mark {
+.register-brand-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -114,12 +116,12 @@
   letter-spacing: 0.02em;
 }
 
-.login-side-copy {
+.register-side-copy {
   display: grid;
   gap: 14px;
 }
 
-.login-side-kicker {
+.register-side-kicker {
   margin: 0;
   font-size: 0.8rem;
   letter-spacing: 0.12em;
@@ -127,14 +129,14 @@
   opacity: 0.9;
 }
 
-.login-side-title {
+.register-side-title {
   margin: 0;
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.02;
   letter-spacing: -0.04em;
 }
 
-.login-side-text {
+.register-side-text {
   margin: 0;
   max-width: 280px;
   font-size: 1rem;
@@ -142,7 +144,7 @@
   opacity: 0.95;
 }
 
-.login-side-button {
+.register-side-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -161,25 +163,26 @@
   transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease;
 }
 
-.login-side-button:hover {
+.register-side-button:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.14);
   transform: translateY(-1px);
 }
 
-.login-card {
+.register-card {
   position: relative;
   display: grid;
   place-items: center;
   padding: 42px 34px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.96));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.96));
 }
 
-.login-card-inner {
+.register-card-inner {
   width: min(410px, 100%);
 }
 
-.login-header {
+.register-header {
   display: grid;
   justify-items: center;
   gap: 16px;
@@ -187,26 +190,27 @@
   text-align: center;
 }
 
-.login-title {
+.register-title {
   margin: 0;
-  color: var(--login-accent);
+  color: var(--register-accent);
   font-size: clamp(2rem, 3vw, 2.7rem);
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
-.login-subtitle {
+
+.register-subtitle {
   margin: 0;
-  color: var(--login-muted);
+  color: var(--register-muted);
   font-size: 0.92rem;
 }
 
-.login-form {
+.register-form {
   display: grid;
   gap: 14px;
 }
 
-.login-field {
+.register-field {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -218,46 +222,46 @@
   transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
-.login-field:focus-within {
+.register-field:focus-within {
   border-color: rgba(46, 196, 182, 0.78);
   box-shadow: 0 0 0 4px rgba(46, 196, 182, 0.14);
   transform: translateY(-1px);
 }
 
-.login-field-icon {
+.register-field-icon {
   display: inline-flex;
   width: 18px;
   height: 18px;
   color: #93a2b8;
 }
 
-.login-field-icon svg {
+.register-field-icon svg {
   width: 100%;
   height: 100%;
 }
 
-.login-input {
+.register-input {
   flex: 1;
   min-width: 0;
   border: 0;
   outline: 0;
   background: transparent;
-  color: var(--login-ink);
+  color: var(--register-ink);
   font-size: 1rem;
 }
 
-.login-input::placeholder {
+.register-input::placeholder {
   color: #95a3b7;
 }
 
-.login-toggle {
+.register-toggle {
   border: 0;
   outline: none;
   min-width: 66px;
   padding: 8px 12px;
   border-radius: 12px;
   background: rgba(46, 196, 182, 0.12);
-  color: var(--login-accent-deep);
+  color: var(--register-accent-deep);
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
@@ -265,22 +269,22 @@
   transition: background-color 0.18s ease, transform 0.18s ease;
 }
 
-.login-toggle:hover:not(:disabled) {
+.register-toggle:hover:not(:disabled) {
   background: rgba(46, 196, 182, 0.18);
   transform: translateY(-1px);
 }
 
-.login-toggle:focus,
-.login-toggle:active {
+.register-toggle:focus,
+.register-toggle:active {
   outline: none;
   box-shadow: none;
 }
 
-.login-toggle:focus-visible {
+.register-toggle:focus-visible {
   box-shadow: 0 0 0 3px rgba(46, 196, 182, 0.16);
 }
 
-.login-message {
+.register-message {
   margin: 0;
   padding: 12px 14px;
   border-radius: 14px;
@@ -288,26 +292,26 @@
   line-height: 1.55;
 }
 
-.login-error {
+.register-error {
   color: #b91c1c;
   background: rgba(254, 242, 242, 0.98);
   border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
-.login-success {
+.register-success {
   color: #15803d;
   background: rgba(240, 253, 244, 0.98);
   border: 1px solid rgba(74, 222, 128, 0.2);
 }
 
-.login-submit {
+.register-submit {
   justify-self: center;
   min-width: 190px;
   min-height: 52px;
   border: 0;
   border-radius: 999px;
   padding: 0 28px;
-  background: linear-gradient(135deg, var(--login-accent) 0%, #31c9a6 100%);
+  background: linear-gradient(135deg, var(--register-accent) 0%, #31c9a6 100%);
   color: #ffffff;
   font-size: 0.95rem;
   font-weight: 800;
@@ -318,69 +322,69 @@
   transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
 
-.login-submit:hover:not(:disabled) {
+.register-submit:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 20px 30px rgba(46, 196, 182, 0.3);
 }
 
-.login-submit:disabled,
-.login-toggle:disabled,
-.login-input:disabled {
+.register-submit:disabled,
+.register-toggle:disabled,
+.register-input:disabled {
   opacity: 0.72;
   cursor: not-allowed;
 }
 
 @media (max-width: 860px) {
-  .login-page {
+  .register-page {
     padding: 14px;
   }
 
-  .login-shell {
+  .register-shell {
     grid-template-columns: 1fr;
   }
 
-  .login-side {
+  .register-side {
     gap: 18px;
     padding: 24px 22px;
   }
 
-  .login-side-text {
+  .register-side-text {
     max-width: none;
   }
 
-  .login-card {
+  .register-card {
     padding: 28px 20px;
   }
 }
 
 @media (max-width: 520px) {
-  .login-page {
+  .register-page {
     padding: 8px;
   }
 
-  .login-shell {
+  .register-shell {
     border-radius: 20px;
   }
 
-  .login-side {
+  .register-side {
     padding: 20px 16px;
   }
 
-  .login-card {
+  .register-card {
     padding: 22px 14px 20px;
   }
 
-  .login-title {
+  .register-title {
     font-size: 1.8rem;
   }
 
-  .login-field {
+  .register-field {
     min-height: 52px;
     padding: 0 14px;
     border-radius: 14px;
   }
 
-  .login-submit {
+  .register-submit {
     width: 100%;
     min-width: 0;
   }
