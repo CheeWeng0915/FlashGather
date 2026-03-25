@@ -8,6 +8,7 @@ import {
   hasStoredUserSession
 } from '../utils/auth';
 import './Login.css';
+import logo from '../assets/logo.jpg';
 
 const getErrorMessage = (payload, fallbackMessage) => {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -112,7 +113,7 @@ export default function Login() {
       <div className="login-shell">
         <aside className="login-side">
           <div className="login-brand">
-            <span className="login-brand-mark">FG</span>
+            <img className="login-brand-mark" src={logo} alt="FlashGather logo" />
             <span>FlashGather</span>
           </div>
 
