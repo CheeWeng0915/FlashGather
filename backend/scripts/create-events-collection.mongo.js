@@ -1,7 +1,7 @@
 // Run with:
-// mongosh "mongodb://127.0.0.1:27017/flashgather" backend/scripts/create-events-collection.mongo.js
+// mongosh "mongodb://127.0.0.1:27017/FlashGather" backend/scripts/create-events-collection.mongo.js
 
-const dbName = 'flashgather';
+const dbName = 'FlashGather';
 const collectionName = 'events';
 
 const targetDb = db.getSiblingDB(dbName);

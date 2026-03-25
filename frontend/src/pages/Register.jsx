@@ -1,7 +1,38 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 import './Login.css';
+
+const TOKEN_STORAGE_KEY = 'token';
+const USER_STORAGE_KEY = 'currentUser';
+
+const getErrorMessage = (payload, fallbackMessage) => {
+  if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+    return payload.errors[0]?.msg || fallbackMessage;
+  }
+
+  if (typeof payload?.error === 'string' && payload.error.trim()) {
+    return payload.error;
+  }
+
+  return fallbackMessage;
+};
+
+const hasStoredUserSession = () => {
+  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+  const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+
+  if (!token || !storedUser) {
+    return false;
+  }
+
+  try {
+    const parsedUser = JSON.parse(storedUser);
+    return Boolean(parsedUser?.id || parsedUser?.email || parsedUser?.username);
+  } catch {
+    return false;
+  }
+};
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,13 +46,36 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  useEffect(() => {
+    if (hasStoredUserSession()) {
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isLoading) {
+      return;
+    }
+
+    const normalizedUsername = username.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
     setError('');
     setSuccess('');
 
-    if (!username || !email || !password || !confirmPassword) {
+    if (!normalizedUsername || !normalizedEmail || !password || !confirmPassword) {
       setError('Please fill in all fields.');
+      return;
+    }
+
+    if (normalizedUsername.length < 2) {
+      setError('Username must be at least 2 characters.');
+      return;
+    }
+
+    if (!normalizedEmail.includes('@')) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -41,29 +95,38 @@ export default function Register() {
       const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
+        body: JSON.stringify({
+          username: normalizedUsername,
+          email: normalizedEmail,
+          password
+        })
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await response.json()
+        : null;
 
       if (!response.ok) {
-        if (Array.isArray(data.errors) && data.errors.length > 0) {
-          setError(data.errors[0].msg || 'Registration failed.');
-        } else {
-          setError(data.error || 'Registration failed.');
-        }
+        setError(getErrorMessage(data, 'Registration failed.'));
         return;
       }
 
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
+      // Registration should send the user to the login screen, not leave behind
+      // a partial session that makes the auth flow inconsistent.
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      localStorage.removeItem(USER_STORAGE_KEY);
+
       setSuccess('Account created successfully. Redirecting to login...');
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
 
       setTimeout(() => {
-        navigate('/login');
+        navigate('/login', { replace: true });
       }, 900);
-    } catch (requestError) {
+    } catch {
       setError('Cannot connect to server. Please try again.');
     } finally {
       setIsLoading(false);
@@ -92,6 +155,8 @@ export default function Register() {
               onChange={(event) => setUsername(event.target.value)}
               placeholder="yourname"
               autoComplete="username"
+              required
+              disabled={isLoading}
             />
           </div>
 
@@ -107,6 +172,8 @@ export default function Register() {
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
               autoComplete="email"
+              required
+              disabled={isLoading}
             />
           </div>
 
@@ -122,11 +189,14 @@ export default function Register() {
               onChange={(event) => setPassword(event.target.value)}
               placeholder="At least 6 characters"
               autoComplete="new-password"
+              required
+              disabled={isLoading}
             />
             <button
               type="button"
               className="login-toggle"
               onClick={() => setShowPassword((value) => !value)}
+              disabled={isLoading}
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
@@ -144,11 +214,14 @@ export default function Register() {
               onChange={(event) => setConfirmPassword(event.target.value)}
               placeholder="Re-enter password"
               autoComplete="new-password"
+              required
+              disabled={isLoading}
             />
             <button
               type="button"
               className="login-toggle"
               onClick={() => setShowConfirmPassword((value) => !value)}
+              disabled={isLoading}
             >
               {showConfirmPassword ? 'Hide' : 'Show'}
             </button>
@@ -161,6 +234,10 @@ export default function Register() {
             {isLoading ? 'Creating account...' : 'Register'}
           </button>
         </form>
+
+        <p className="login-subtitle">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
       </div>
     </section>
   );

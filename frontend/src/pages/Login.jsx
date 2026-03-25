@@ -1,7 +1,38 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 import './Login.css';
+
+const TOKEN_STORAGE_KEY = 'token';
+const USER_STORAGE_KEY = 'currentUser';
+
+const getErrorMessage = (payload, fallbackMessage) => {
+  if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+    return payload.errors[0]?.msg || fallbackMessage;
+  }
+
+  if (typeof payload?.error === 'string' && payload.error.trim()) {
+    return payload.error;
+  }
+
+  return fallbackMessage;
+};
+
+const hasStoredUserSession = () => {
+  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+  const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+
+  if (!token || !storedUser) {
+    return false;
+  }
+
+  try {
+    const parsedUser = JSON.parse(storedUser);
+    return Boolean(parsedUser?.id || parsedUser?.email || parsedUser?.username);
+  } catch {
+    return false;
+  }
+};
 
 export default function Login() {
   const navigate = useNavigate();
@@ -9,14 +40,38 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (hasStoredUserSession()) {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Clean up stale token-only state so the login page stays usable.
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(USER_STORAGE_KEY);
+  }, [navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
+    if (isLoading) {
+      return;
+    }
 
-    if (!email || !password) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    setError('');
+    setSuccess('');
+
+    if (!normalizedEmail || !password) {
       setError('Please enter both email and password.');
+      return;
+    }
+
+    if (!normalizedEmail.includes('@')) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -26,24 +81,39 @@ export default function Login() {
       const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: normalizedEmail, password })
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await response.json()
+        : null;
 
       if (!response.ok) {
-        if (Array.isArray(data.errors) && data.errors.length > 0) {
-          setError(data.errors[0].msg || 'Login failed.');
-        } else {
-          setError(data.error || 'Login failed.');
-        }
+        setError(getErrorMessage(data, 'Login failed.'));
         return;
       }
 
-      if (data.token) {
-        localStorage.setItem('token', data.token);
+      if (!data?.token) {
+        setError('Login succeeded but no token was returned.');
+        return;
       }
-      navigate('/');
+
+      localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+
+      if (data.user) {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+      } else {
+        localStorage.removeItem(USER_STORAGE_KEY);
+      }
+
+      setSuccess('Login successful. Redirecting...');
+      setEmail('');
+      setPassword('');
+
+      window.setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 500);
     } catch {
       setError('Cannot connect to server. Please try again.');
     } finally {
@@ -73,6 +143,8 @@ export default function Login() {
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
               autoComplete="email"
+              required
+              disabled={isLoading}
             />
           </div>
 
@@ -88,22 +160,30 @@ export default function Login() {
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Enter your password"
               autoComplete="current-password"
+              required
+              disabled={isLoading}
             />
             <button
               type="button"
               className="login-toggle"
               onClick={() => setShowPassword((value) => !value)}
+              disabled={isLoading}
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
           </div>
 
           {error ? <p className="login-error">{error}</p> : null}
+          {success ? <p className="login-success">{success}</p> : null}
 
           <button type="submit" disabled={isLoading} className="login-submit">
             {isLoading ? 'Signing in...' : 'Login'}
           </button>
         </form>
+
+        <p className="login-subtitle">
+          New here? <Link to="/register">Create an account</Link>
+        </p>
       </div>
     </section>
   );
