@@ -104,16 +104,14 @@
 }
 
 .register-brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 34px;
   height: 34px;
   border: 1px solid rgba(255, 255, 255, 0.82);
   border-radius: 10px;
+  object-fit: cover;
   background: rgba(255, 255, 255, 0.08);
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
+  box-shadow: 0 6px 14px rgba(29, 42, 68, 0.14);
 }
 
 .register-side-copy {

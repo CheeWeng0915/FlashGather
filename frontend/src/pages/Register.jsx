@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 import { clearStoredUserSession, hasStoredUserSession } from '../utils/auth';
 import './Register.css';
+import logo from '../assets/logo.jpg';
 
 const getErrorMessage = (payload, fallbackMessage) => {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -111,7 +112,7 @@ export default function Register() {
       <div className="register-shell">
         <aside className="register-side">
           <div className="register-brand">
-            <span className="register-brand-mark">FG</span>
+            <img className="register-brand-mark" src={logo} alt="FlashGather logo" />
             <span>FlashGather</span>
           </div>
 

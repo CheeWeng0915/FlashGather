@@ -102,16 +102,14 @@
 }
 
 .login-brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 34px;
   height: 34px;
   border: 1px solid rgba(255, 255, 255, 0.82);
   border-radius: 10px;
+  object-fit: cover;
   background: rgba(255, 255, 255, 0.08);
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
+  box-shadow: 0 6px 14px rgba(29, 42, 68, 0.14);
 }
 
 .login-side-copy {
@@ -193,6 +191,26 @@
   font-size: clamp(2rem, 3vw, 2.7rem);
   font-weight: 800;
   letter-spacing: -0.03em;
+}
+
+.login-socials {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 50%;
+  color: var(--login-ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: #ffffff;
 }
 
 .login-subtitle {

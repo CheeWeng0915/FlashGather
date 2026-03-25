@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { clearStoredUserSession, hasStoredUserSession } from '../utils/auth';
+import logo from '../assets/logo.jpg';
 
 const menuItems = [
   { to: '/', label: 'Home', requiresAuth: true },
@@ -71,12 +72,11 @@ export default function Layout() {
             style={{ ...styles.menuButton, ...(isMobile ? null : styles.menuButtonHidden) }}
             aria-label="Toggle sidebar"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 7h16M4 12h16M4 17h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+            ☰
           </button>
 
           <Link to="/" style={styles.brand}>
+            <img src={logo} alt="Flash Gather Logo" style={styles.brandLogo} />
             Flash Gather
           </Link>
         </div>
@@ -185,7 +185,18 @@ const styles = {
     textDecoration: 'none',
     color: '#0f172a',
     fontWeight: 800,
-    fontSize: '1rem'
+    fontSize: '1rem',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '10px'
+  },
+  brandLogo: {
+    width: '36px',
+    height: '36px',
+    objectFit: 'cover',
+    borderRadius: '10px',
+    border: '1px solid #e2e8f0',
+    display: 'block'
   },
   body: {
     display: 'grid',
