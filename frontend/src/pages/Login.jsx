@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config';
 import {
   TOKEN_STORAGE_KEY,
-  USER_STORAGE_KEY,
   clearStoredUserSession,
-  hasStoredUserSession
+  hasStoredUserSession,
+  setStoredUser
 } from '../utils/auth';
 import './Login.css';
 import logo from '../assets/logo.jpg';
@@ -99,11 +99,7 @@ export default function Login() {
 
       localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
 
-      if (data.user) {
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
-      } else {
-        localStorage.removeItem(USER_STORAGE_KEY);
-      }
+      setStoredUser(data.user);
 
       setSuccess('Login successful. Redirecting...');
       showToast({

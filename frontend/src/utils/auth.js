@@ -63,6 +63,15 @@ export const getStoredUser = () => {
   }
 };
 
+export const setStoredUser = (user) => {
+  if (!user) {
+    localStorage.removeItem(USER_STORAGE_KEY);
+    return;
+  }
+
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+};
+
 export const hasStoredUserSession = () => {
   const token = getStoredToken();
   const user = getStoredUser();

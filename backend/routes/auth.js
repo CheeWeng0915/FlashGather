@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const requireAuth = require('../middleware/auth');
 const requireDatabase = require('../middleware/requireDatabase');
 
 const router = express.Router();
@@ -11,17 +12,21 @@ const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
 router.use(requireDatabase);
 
+const formatUserResponse = (user) => ({
+  id: String(user._id),
+  username: user.username,
+  email: user.email,
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt
+});
+
 const createAuthResponse = (user) => {
   const token = jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: jwtExpiresIn });
 
   return {
     token,
     sessionExpiresIn: jwtExpiresIn,
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email
-    }
+    user: formatUserResponse(user)
   };
 };
 
@@ -84,6 +89,57 @@ router.post(
       }
 
       return res.json(createAuthResponse(user));
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json({ user: formatUserResponse(user) });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.post(
+  '/change-password',
+  requireAuth,
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters')
+    .custom((value, { req }) => value !== req.body.currentPassword)
+    .withMessage('New password must be different from your current password'),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const matches = await bcrypt.compare(currentPassword, user.password);
+      if (!matches) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+
+      user.password = await bcrypt.hash(newPassword, 10);
+      await user.save();
+
+      return res.json({ message: 'Password updated successfully' });
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }

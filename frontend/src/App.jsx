@@ -4,6 +4,7 @@ import EventDetail from "./pages/EventDetail";
 import Layout from "./pages/Layout";
 import Login from "./pages/Login";
 import NewEvent from "./pages/NewEvent";
+import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import { API_BASE } from "./config";
 import { getAuthHeaders, hasStoredUserSession } from "./utils/auth";
@@ -327,6 +328,14 @@ export default function App() {
           element={
             <RequireAuth>
               <EventDetail />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <Profile />
             </RequireAuth>
           }
         />

@@ -11,5 +11,20 @@
   },
   "dependencies": {
     "mongosh": "^2.8.1"
-  }
+  },
+  "version": "1.0.0",
+  "description": "The active app folders live at the repository root:",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CheeWeng0915/FlashGather.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CheeWeng0915/FlashGather/issues"
+  },
+  "homepage": "https://github.com/CheeWeng0915/FlashGather#readme"
 }
