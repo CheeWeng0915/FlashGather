@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { clearStoredUserSession, hasStoredUserSession } from '../utils/auth';
 import logo from '../assets/logo.jpg';
+import { useToast } from '../components/ToastProvider';
 
 const menuItems = [
   { to: '/', label: 'Home', requiresAuth: true },
@@ -13,6 +14,7 @@ const menuItems = [
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { showToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
   const [isAuthenticated, setIsAuthenticated] = useState(() => hasStoredUserSession());
@@ -59,6 +61,11 @@ export default function Layout() {
     clearStoredUserSession();
     setIsAuthenticated(false);
     setIsSidebarOpen(false);
+    showToast({
+      type: 'success',
+      title: 'Logged Out',
+      message: 'You have been signed out successfully.'
+    });
     navigate('/login', { replace: true });
   };
 

@@ -94,7 +94,7 @@ export default function EventDetail() {
             to="/"
             className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
           >
-            Back to Events
+            Back to Home
           </Link>
         </div>
 

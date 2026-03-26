@@ -9,6 +9,8 @@ import {
 } from '../utils/auth';
 import './Login.css';
 import logo from '../assets/logo.jpg';
+import { useToast } from '../components/ToastProvider';
+import { fetchWithTimeout, isAbortError } from '../utils/http';
 
 const getErrorMessage = (payload, fallbackMessage) => {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -24,6 +26,7 @@ const getErrorMessage = (payload, fallbackMessage) => {
 
 export default function Login() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -53,19 +56,23 @@ export default function Login() {
     setSuccess('');
 
     if (!normalizedEmail || !password) {
-      setError('Please enter both email and password.');
+      const message = 'Please enter both email and password.';
+      setError(message);
+      showToast({ type: 'error', title: 'Sign In Failed', message });
       return;
     }
 
     if (!normalizedEmail.includes('@')) {
-      setError('Please enter a valid email address.');
+      const message = 'Please enter a valid email address.';
+      setError(message);
+      showToast({ type: 'error', title: 'Sign In Failed', message });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await fetchWithTimeout(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: normalizedEmail, password })
@@ -77,12 +84,16 @@ export default function Login() {
         : null;
 
       if (!response.ok) {
-        setError(getErrorMessage(data, 'Login failed.'));
+        const message = getErrorMessage(data, 'Login failed.');
+        setError(message);
+        showToast({ type: 'error', title: 'Sign In Failed', message });
         return;
       }
 
       if (!data?.token) {
-        setError('Login succeeded but no token was returned.');
+        const message = 'Login succeeded but no token was returned.';
+        setError(message);
+        showToast({ type: 'error', title: 'Sign In Failed', message });
         return;
       }
 
@@ -95,14 +106,23 @@ export default function Login() {
       }
 
       setSuccess('Login successful. Redirecting...');
+      showToast({
+        type: 'success',
+        title: 'Signed In',
+        message: 'Welcome back to FlashGather.'
+      });
       setEmail('');
       setPassword('');
 
       window.setTimeout(() => {
         navigate('/', { replace: true });
       }, 500);
-    } catch {
-      setError('Cannot connect to server. Please try again.');
+    } catch (error) {
+      const message = isAbortError(error)
+        ? 'The server is taking too long to respond. If Render is waking up, wait a few seconds and try again.'
+        : 'Cannot connect to server. Please try again.';
+      setError(message);
+      showToast({ type: 'error', title: 'Sign In Failed', message });
     } finally {
       setIsLoading(false);
     }
