@@ -2,10 +2,12 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const Event = require('../models/Event');
+const requireDatabase = require('../middleware/requireDatabase');
 const requireAuth = require('../middleware/auth');
 
 const router = express.Router();
 
+router.use(requireDatabase);
 router.use(requireAuth);
 
 const createValidators = [

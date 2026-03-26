@@ -1,7 +1,53 @@
 export const TOKEN_STORAGE_KEY = "token";
 export const USER_STORAGE_KEY = "currentUser";
 
-export const getStoredToken = () => localStorage.getItem(TOKEN_STORAGE_KEY);
+const decodeTokenPayload = (token) => {
+  if (!token) {
+    return null;
+  }
+
+  const segments = token.split(".");
+  if (segments.length !== 3) {
+    return null;
+  }
+
+  try {
+    const base64 = segments[1]
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+    const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    return JSON.parse(window.atob(normalized));
+  } catch {
+    return null;
+  }
+};
+
+export const isTokenExpired = (token) => {
+  const payload = decodeTokenPayload(token);
+
+  if (!payload?.exp) {
+    return true;
+  }
+
+  return payload.exp * 1000 <= Date.now();
+};
+
+const getRawStoredToken = () => localStorage.getItem(TOKEN_STORAGE_KEY);
+
+export const getStoredToken = () => {
+  const token = getRawStoredToken();
+
+  if (!token) {
+    return null;
+  }
+
+  if (isTokenExpired(token)) {
+    clearStoredUserSession();
+    return null;
+  }
+
+  return token;
+};
 
 export const getStoredUser = () => {
   const storedUser = localStorage.getItem(USER_STORAGE_KEY);

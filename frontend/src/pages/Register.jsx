@@ -4,6 +4,8 @@ import { API_BASE } from '../config';
 import { clearStoredUserSession, hasStoredUserSession } from '../utils/auth';
 import './Register.css';
 import logo from '../assets/logo.jpg';
+import { useToast } from '../components/ToastProvider';
+import { fetchWithTimeout, isAbortError } from '../utils/http';
 
 const getErrorMessage = (payload, fallbackMessage) => {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -19,6 +21,7 @@ const getErrorMessage = (payload, fallbackMessage) => {
 
 export default function Register() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,29 +49,37 @@ export default function Register() {
     setSuccess('');
 
     if (!normalizedUsername || !normalizedEmail || !password) {
-      setError('Please fill in all fields.');
+      const message = 'Please fill in all fields.';
+      setError(message);
+      showToast({ type: 'error', title: 'Sign Up Failed', message });
       return;
     }
 
     if (normalizedUsername.length < 2) {
-      setError('Username must be at least 2 characters.');
+      const message = 'Username must be at least 2 characters.';
+      setError(message);
+      showToast({ type: 'error', title: 'Sign Up Failed', message });
       return;
     }
 
     if (!normalizedEmail.includes('@')) {
-      setError('Please enter a valid email address.');
+      const message = 'Please enter a valid email address.';
+      setError(message);
+      showToast({ type: 'error', title: 'Sign Up Failed', message });
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      const message = 'Password must be at least 6 characters.';
+      setError(message);
+      showToast({ type: 'error', title: 'Sign Up Failed', message });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/auth/register`, {
+      const response = await fetchWithTimeout(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -84,7 +95,9 @@ export default function Register() {
         : null;
 
       if (!response.ok) {
-        setError(getErrorMessage(data, 'Registration failed.'));
+        const message = getErrorMessage(data, 'Registration failed.');
+        setError(message);
+        showToast({ type: 'error', title: 'Sign Up Failed', message });
         return;
       }
 
@@ -93,6 +106,11 @@ export default function Register() {
       clearStoredUserSession();
 
       setSuccess('Account created successfully. Redirecting to login...');
+      showToast({
+        type: 'success',
+        title: 'Account Created',
+        message: 'Your account is ready. Please sign in.'
+      });
       setUsername('');
       setEmail('');
       setPassword('');
@@ -100,8 +118,12 @@ export default function Register() {
       setTimeout(() => {
         navigate('/login', { replace: true });
       }, 900);
-    } catch {
-      setError('Cannot connect to server. Please try again.');
+    } catch (error) {
+      const message = isAbortError(error)
+        ? 'The server is taking too long to respond. If Render is waking up, wait a few seconds and try again.'
+        : 'Cannot connect to server. Please try again.';
+      setError(message);
+      showToast({ type: 'error', title: 'Sign Up Failed', message });
     } finally {
       setIsLoading(false);
     }

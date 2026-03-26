@@ -46,6 +46,7 @@ You will use this as `MONGO_URI` in Render.
 
 - `MONGO_URI` = your MongoDB Atlas connection string
 - `JWT_SECRET` = a long random secret string
+- `JWT_EXPIRES_IN` = session length such as `7d`
 
 6. Deploy.
 
@@ -121,6 +122,7 @@ If login or event creation fails, the most common causes are:
 
 - `MONGO_URI`
 - `JWT_SECRET`
+- `JWT_EXPIRES_IN`
 
 ### Frontend on Vercel
 

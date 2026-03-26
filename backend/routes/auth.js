@@ -3,9 +3,27 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const requireDatabase = require('../middleware/requireDatabase');
 
 const router = express.Router();
 const jwtSecret = process.env.JWT_SECRET || 'dev-jwt-secret';
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+
+router.use(requireDatabase);
+
+const createAuthResponse = (user) => {
+  const token = jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: jwtExpiresIn });
+
+  return {
+    token,
+    sessionExpiresIn: jwtExpiresIn,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email
+    }
+  };
+};
 
 router.post(
   '/register',
@@ -35,8 +53,7 @@ router.post(
       const user = new User({ username, email, password: hashed });
       await user.save();
 
-      const token = jwt.sign({ userId: user._id }, jwtSecret);
-      return res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
+      return res.json(createAuthResponse(user));
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -66,8 +83,7 @@ router.post(
         return res.status(401).json({ error: 'Invalid password' });
       }
 
-      const token = jwt.sign({ userId: user._id }, jwtSecret);
-      return res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
+      return res.json(createAuthResponse(user));
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }

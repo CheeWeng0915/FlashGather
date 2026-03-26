@@ -528,6 +528,7 @@ export default function EventForm({
                     ref={dateInputRef}
                     type="date"
                     className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                    value={form.eventDate}
                     placeholder="01-JAN-99"
                     onChange={(event) =>
                       setForm((prev) => ({
@@ -567,6 +568,7 @@ export default function EventForm({
                     step="60"
                     className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                     placeholder="12:30 AM"
+                    value={form.eventTime}
                     onChange={(event) =>
                       setForm((prev) => ({
                         ...prev,
