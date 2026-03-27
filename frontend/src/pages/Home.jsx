@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import EventFiltersBar from "../components/EventFiltersBar";
 import EventListPanel from "../components/EventListPanel";
 import { API_BASE } from "../config";
 import { getAuthHeaders, getStoredUserRole } from "../utils/auth";
-import { splitEventsByTimeline } from "../utils/events";
+import {
+  filterEventsByCriteria,
+  hasActiveEventFilters,
+  splitEventsByTimeline,
+} from "../utils/events";
 
 function AdminHomePage() {
   return (
@@ -36,8 +41,13 @@ function MemberHomePage() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const fetchEvents = async () => {
+    setIsLoading(true);
+
     try {
       const res = await fetch(`${API_BASE}/events`, {
         headers: getAuthHeaders(),
@@ -69,6 +79,27 @@ function MemberHomePage() {
     fetchEvents();
   }, []);
 
+  const filteredEvents = filterEventsByCriteria(events, {
+    searchTerm,
+    startDate,
+    endDate,
+  });
+  const hasActiveFilters = hasActiveEventFilters({
+    searchTerm,
+    startDate,
+    endDate,
+  });
+  const summary = hasActiveFilters
+    ? `${filteredEvents.length} ${
+        filteredEvents.length === 1 ? "event matches" : "events match"
+      } your filters`
+    : `${filteredEvents.length} ${
+        filteredEvents.length === 1 ? "event" : "events"
+      } coming up`;
+  const emptyMessage = hasActiveFilters
+    ? "No upcoming events match your current search or date range."
+    : "No upcoming events right now. Check History for earlier events you've joined.";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -99,12 +130,25 @@ function MemberHomePage() {
           </div>
         ) : (
           <EventListPanel
-            events={events}
+            events={filteredEvents}
             heading="Events You're In"
-            summary={`${events.length} ${
-              events.length === 1 ? "event" : "events"
-            } coming up`}
-            emptyMessage="No upcoming events right now. Check History for earlier events you've joined."
+            summary={summary}
+            emptyMessage={emptyMessage}
+            filters={
+              <EventFiltersBar
+                searchTerm={searchTerm}
+                startDate={startDate}
+                endDate={endDate}
+                onSearchTermChange={setSearchTerm}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+                onReset={() => {
+                  setSearchTerm("");
+                  setStartDate("");
+                  setEndDate("");
+                }}
+              />
+            }
             toolbar={
               <button
                 onClick={fetchEvents}

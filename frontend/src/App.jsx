@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import NewEvent from "./pages/NewEvent";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
+import UserManagement from "./pages/UserManagement";
 import { getStoredUserRole, hasStoredUserSession } from "./utils/auth";
 
 function RequireAuth({ children }) {
@@ -59,6 +60,14 @@ export default function App() {
           element={
             <RequireAdmin>
               <Events />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <RequireAdmin>
+              <UserManagement />
             </RequireAdmin>
           }
         />
