@@ -12,6 +12,7 @@ app.use(express.json());
 
 app.use('/db-test', require('./routes/dbTest'));
 app.use('/auth', require('./routes/auth'));
+app.use('/users', require('./routes/users'));
 app.use('/events', require('./routes/events'));
 
 const startServer = async () => {

@@ -1,16 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import EventFiltersBar from "../components/EventFiltersBar";
 import EventListPanel from "../components/EventListPanel";
 import { API_BASE } from "../config";
 import { getAuthHeaders } from "../utils/auth";
-import { splitEventsByTimeline } from "../utils/events";
+import {
+  filterEventsByCriteria,
+  hasActiveEventFilters,
+  splitEventsByTimeline,
+} from "../utils/events";
 
 export default function History() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const fetchEvents = async () => {
+    setIsLoading(true);
+
     try {
       const res = await fetch(`${API_BASE}/events`, {
         headers: getAuthHeaders(),
@@ -42,6 +52,27 @@ export default function History() {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  const filteredEvents = filterEventsByCriteria(events, {
+    searchTerm,
+    startDate,
+    endDate,
+  });
+  const hasActiveFilters = hasActiveEventFilters({
+    searchTerm,
+    startDate,
+    endDate,
+  });
+  const summary = hasActiveFilters
+    ? `${filteredEvents.length} ${
+        filteredEvents.length === 1 ? "past event matches" : "past events match"
+      } your filters`
+    : `${filteredEvents.length} ${
+        filteredEvents.length === 1 ? "past event" : "past events"
+      }`;
+  const emptyMessage = hasActiveFilters
+    ? "No past events match your current search or date range."
+    : "No past events yet. Completed events will appear here.";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
@@ -75,12 +106,25 @@ export default function History() {
           </div>
         ) : (
           <EventListPanel
-            events={events}
+            events={filteredEvents}
             heading="Event History"
-            summary={`${events.length} ${
-              events.length === 1 ? "past event" : "past events"
-            }`}
-            emptyMessage="No past events yet. Completed events will appear here."
+            summary={summary}
+            emptyMessage={emptyMessage}
+            filters={
+              <EventFiltersBar
+                searchTerm={searchTerm}
+                startDate={startDate}
+                endDate={endDate}
+                onSearchTermChange={setSearchTerm}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+                onReset={() => {
+                  setSearchTerm("");
+                  setStartDate("");
+                  setEndDate("");
+                }}
+              />
+            }
             toolbar={
               <button
                 onClick={fetchEvents}

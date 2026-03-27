@@ -17,6 +17,7 @@ import { useToast } from '../components/ToastProvider';
 const menuItems = [
   { to: '/', label: 'Home', requiresAuth: true },
   { to: '/events', label: 'Events', requiresAuth: true, requiresAdmin: true },
+  { to: '/users', label: 'Users', requiresAuth: true, requiresAdmin: true },
   { to: '/history', label: 'History', requiresAuth: true, requiresMember: true },
   { to: '/profile', label: 'Profile', requiresAuth: true },
   { to: '/login', label: 'Login', guestOnly: true },

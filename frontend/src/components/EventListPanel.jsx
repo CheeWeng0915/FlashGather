@@ -19,6 +19,7 @@ export default function EventListPanel({
   heading,
   summary,
   emptyMessage,
+  filters = null,
   toolbar = null,
   onOpen,
   onDelete,
@@ -26,13 +27,15 @@ export default function EventListPanel({
 }) {
   return (
     <section className="mt-8">
-      <div className="mb-6 flex items-center justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">{heading}</h2>
           <p className="mt-1 text-sm text-slate-500">{summary}</p>
         </div>
         {toolbar}
       </div>
+
+      {filters ? <div className="mb-6">{filters}</div> : null}
 
       {events.length === 0 ? (
         <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-12 text-center">
@@ -68,87 +71,87 @@ export default function EventListPanel({
               key={eventItem.id || eventItem._id}
               className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10"
             >
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500"></div>
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500"></div>
 
-            <div className="absolute right-5 top-5">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                </svg>
-                {eventItem.participantCount || 0}
-              </span>
-            </div>
-
-            <h3 className="pr-16 text-xl font-bold leading-tight text-slate-900">
-              {eventItem.title}
-            </h3>
-            <p className="mt-3 line-clamp-2 text-sm text-slate-600">
-              {eventItem.description}
-            </p>
-
-            <dl className="mt-5 space-y-3 border-t border-slate-100 pt-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+              <div className="absolute right-5 top-5">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                   <svg
-                    className="h-4 w-4 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    className="h-3.5 w-3.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                   </svg>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Time
-                  </dt>
-                  <dd className="mt-0.5 truncate text-sm font-medium text-slate-900">
-                    {formatEventTime(eventItem.time)}
-                  </dd>
-                </div>
+                  {eventItem.participantCount || 0}
+                </span>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
-                  <svg
-                    className="h-4 w-4 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+              <h3 className="pr-16 text-xl font-bold leading-tight text-slate-900">
+                {eventItem.title}
+              </h3>
+              <p className="mt-3 line-clamp-2 text-sm text-slate-600">
+                {eventItem.description}
+              </p>
+
+              <dl className="mt-5 space-y-3 border-t border-slate-100 pt-4">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                    <svg
+                      className="h-4 w-4 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                      Time
+                    </dt>
+                    <dd className="mt-0.5 truncate text-sm font-medium text-slate-900">
+                      {formatEventTime(eventItem.time)}
+                    </dd>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Location
-                  </dt>
-                  <dd className="mt-0.5 truncate text-sm font-medium text-slate-900">
-                    {eventItem.location || "To be announced"}
-                  </dd>
+
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+                    <svg
+                      className="h-4 w-4 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                      Location
+                    </dt>
+                    <dd className="mt-0.5 truncate text-sm font-medium text-slate-900">
+                      {eventItem.location || "To be announced"}
+                    </dd>
+                  </div>
                 </div>
-              </div>
-            </dl>
+              </dl>
 
               <div className="relative z-10 mt-6 flex gap-2">
                 {isAdmin ? (

@@ -1,15 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import EventFiltersBar from "../components/EventFiltersBar";
 import EventListPanel from "../components/EventListPanel";
 import { API_BASE } from "../config";
 import { getAuthHeaders } from "../utils/auth";
+import {
+  filterEventsByCriteria,
+  hasActiveEventFilters,
+} from "../utils/events";
 
 export default function Events() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const fetchEvents = async () => {
+    setIsLoading(true);
+
     try {
       const res = await fetch(`${API_BASE}/events`, {
         headers: getAuthHeaders(),
@@ -66,6 +76,27 @@ export default function Events() {
     fetchEvents();
   }, []);
 
+  const filteredEvents = filterEventsByCriteria(events, {
+    searchTerm,
+    startDate,
+    endDate,
+  });
+  const hasActiveFilters = hasActiveEventFilters({
+    searchTerm,
+    startDate,
+    endDate,
+  });
+  const summary = hasActiveFilters
+    ? `${filteredEvents.length} ${
+        filteredEvents.length === 1 ? "event matches" : "events match"
+      } your filters`
+    : `${filteredEvents.length} ${
+        filteredEvents.length === 1 ? "event" : "events"
+      } created`;
+  const emptyMessage = hasActiveFilters
+    ? "No events match your current search or date range."
+    : "Get started by creating your first event using the + button above.";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -96,12 +127,25 @@ export default function Events() {
           </div>
         ) : (
           <EventListPanel
-            events={events}
+            events={filteredEvents}
             heading="Your Created Events"
-            summary={`${events.length} ${
-              events.length === 1 ? "event" : "events"
-            } created`}
-            emptyMessage="Get started by creating your first event using the + button above."
+            summary={summary}
+            emptyMessage={emptyMessage}
+            filters={
+              <EventFiltersBar
+                searchTerm={searchTerm}
+                startDate={startDate}
+                endDate={endDate}
+                onSearchTermChange={setSearchTerm}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+                onReset={() => {
+                  setSearchTerm("");
+                  setStartDate("");
+                  setEndDate("");
+                }}
+              />
+            }
             toolbar={
               <div className="flex items-center gap-3">
                 <button
