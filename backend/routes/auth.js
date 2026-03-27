@@ -13,6 +13,7 @@ const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
 router.use(requireDatabase);
 
 const toRoleValue = (user) => (user?.role === 'admin' ? 'admin' : 'member');
+const getUserTokenVersion = (user) => (Number.isInteger(user?.tokenVersion) ? user.tokenVersion : 0);
 
 const formatUserResponse = (user) => ({
   id: String(user._id),
@@ -24,7 +25,14 @@ const formatUserResponse = (user) => ({
 });
 
 const createAuthResponse = (user) => {
-  const token = jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: jwtExpiresIn });
+  const token = jwt.sign(
+    {
+      userId: user._id,
+      tokenVersion: getUserTokenVersion(user)
+    },
+    jwtSecret,
+    { expiresIn: jwtExpiresIn }
+  );
 
   return {
     token,
@@ -147,9 +155,13 @@ router.post(
       }
 
       user.password = await bcrypt.hash(newPassword, 10);
+      user.tokenVersion = getUserTokenVersion(user) + 1;
       await user.save();
 
-      return res.json({ message: 'Password updated successfully' });
+      return res.json({
+        message: 'Password updated successfully. Please sign in again.',
+        requiresReauth: true
+      });
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }

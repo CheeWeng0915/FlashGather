@@ -214,12 +214,14 @@ export default function Profile() {
         return;
       }
 
-      const message = data?.message || 'Password updated successfully.';
+      const message = data?.message || 'Password updated successfully. Please sign in again.';
       setFormSuccess(message);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      clearStoredUserSession();
       showToast({ type: 'success', title: 'Password Updated', message });
+      navigate('/login', { replace: true });
     } catch (error) {
       const message = isAbortError(error)
         ? 'The server took too long to respond. Please try again.'
