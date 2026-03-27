@@ -121,7 +121,7 @@ export default function Register() {
     } catch (error) {
       const message = isAbortError(error)
         ? 'The server is taking too long to respond. If Render is waking up, wait a few seconds and try again.'
-        : 'Cannot connect to server. Please try again.';
+        : 'Cannot connect to server. If you are running locally, make sure the backend is running and MongoDB is reachable.';
       setError(message);
       showToast({ type: 'error', title: 'Sign Up Failed', message });
     } finally {

@@ -6,6 +6,7 @@ import {
   getAuthHeaders,
   setStoredUser
 } from '../utils/auth';
+import { formatDisplayDate } from '../utils/dateDisplay';
 import { fetchWithTimeout, isAbortError } from '../utils/http';
 import { useToast } from '../components/ToastProvider';
 import './Profile.css';
@@ -44,7 +45,7 @@ const formatDate = (value) => {
     return value;
   }
 
-  return date.toLocaleString();
+  return formatDisplayDate(date);
 };
 
 const getInitials = (profile) => {
@@ -302,6 +303,10 @@ export default function Profile() {
               <dl className="profile-details">
                 <DetailRow label="Username" value={profile.username} />
                 <DetailRow label="Email" value={profile.email} />
+                <DetailRow
+                  label="Role"
+                  value={profile.role === 'admin' ? 'Admin' : 'Member'}
+                />
                 <DetailRow label="User ID" value={profile.id} />
                 <DetailRow label="Member since" value={formatDate(profile.createdAt)} />
                 <DetailRow label="Last updated" value={formatDate(profile.updatedAt)} />

@@ -36,6 +36,11 @@ if (!existing.includes(collectionName)) {
             maxLength: 200,
             description: 'Password hash is required'
           },
+          role: {
+            bsonType: 'string',
+            enum: ['admin', 'member'],
+            description: 'Role must be admin or member'
+          },
           createdAt: {
             bsonType: ['date', 'null']
           },

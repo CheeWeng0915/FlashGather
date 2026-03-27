@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import EventForm from "../components/EventForm";
 import { API_BASE } from "../config";
-import { getAuthHeaders } from "../utils/auth";
+import { getAuthHeaders, getStoredUserRole } from "../utils/auth";
+import { formatDisplayDateTime } from "../utils/dateDisplay";
+import { isPastEvent } from "../utils/events";
 
 const readApiError = async (response, fallbackMessage) => {
   let errorMessage = fallbackMessage;
@@ -22,12 +24,93 @@ const readApiError = async (response, fallbackMessage) => {
   throw new Error(errorMessage);
 };
 
+const formatEventTime = (value) => {
+  if (!value) {
+    return "To be announced";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return formatDisplayDateTime(date);
+};
+
+function ReadOnlyDetail({ eventItem, eyebrow = "Member View", notice = "" }) {
+  return (
+    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-700 px-6 py-8 text-white">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+          {eyebrow}
+        </p>
+        <h2 className="mt-3 text-3xl font-bold">{eventItem.title}</h2>
+        <p className="mt-2 max-w-2xl text-sm text-slate-200">
+          {eventItem.description || "No description provided for this event."}
+        </p>
+        {notice ? (
+          <div className="mt-4 inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-medium text-slate-100 backdrop-blur-sm">
+            {notice}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="grid gap-5 p-6 sm:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Time
+          </p>
+          <p className="mt-3 text-lg font-semibold text-slate-900">
+            {formatEventTime(eventItem.time)}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Location
+          </p>
+          <p className="mt-3 text-lg font-semibold text-slate-900">
+            {eventItem.location || "To be announced"}
+          </p>
+          {eventItem.lat !== null && eventItem.lng !== null ? (
+            <p className="mt-2 text-xs text-slate-500">
+              Coordinates: {Number(eventItem.lat).toFixed(6)},{" "}
+              {Number(eventItem.lng).toFixed(6)}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Participants
+          </p>
+          <p className="mt-3 text-lg font-semibold text-slate-900">
+            {eventItem.participantCount || 0} joined
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Capacity
+          </p>
+          <p className="mt-3 text-lg font-semibold text-slate-900">
+            {eventItem.capacity || "No limit set"}
+          </p>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function EventDetail() {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const [eventItem, setEventItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const isAdmin = getStoredUserRole() === "admin";
+  const isPast = eventItem ? isPastEvent(eventItem) : false;
+  const backPath = isAdmin ? "/events" : isPast ? "/history" : "/";
 
   useEffect(() => {
     const controller = new AbortController();
@@ -83,18 +166,22 @@ export default function EventDetail() {
       <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
-              Event Detail
+            <p
+              className={`text-xs font-semibold uppercase tracking-[0.2em] ${
+                isAdmin ? "text-blue-600" : "text-emerald-600"
+              }`}
+            >
+              {isAdmin ? (isPast ? "Past Event" : "Event Detail") : "Joined Event"}
             </p>
             <h1 className="mt-2 text-3xl font-bold text-slate-900">
-              Edit Event
+              {isAdmin ? (isPast ? "Past Event Details" : "Edit Event") : "Event Details"}
             </h1>
           </div>
           <Link
-            to="/"
+            to={backPath}
             className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
           >
-            Back to Home
+            {isAdmin ? "Back to Events" : `Back to ${isPast ? "History" : "Home"}`}
           </Link>
         </div>
 
@@ -110,24 +197,41 @@ export default function EventDetail() {
             <p>{loadError}</p>
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate(backPath)}
               className="mt-4 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-red-700"
             >
-              Return to Events
+              {isAdmin
+                ? "Return to Events"
+                : `Return to ${isPast ? "History" : "Home"}`}
             </button>
           </div>
         ) : null}
 
         {!isLoading && !loadError && eventItem ? (
-          <EventForm
-            initialValues={eventItem}
-            heading="Edit Event"
-            subheading="Update the details and save your changes"
-            submitLabel="Save Changes"
-            submittingLabel="Saving..."
-            onSubmit={updateEvent}
-            onSuccess={() => navigate("/")}
-          />
+          isAdmin ? (
+            isPast ? (
+              <ReadOnlyDetail
+                eventItem={eventItem}
+                eyebrow="Past Event"
+                notice="Past events are locked and can no longer be edited or deleted."
+              />
+            ) : (
+              <EventForm
+                initialValues={eventItem}
+                heading="Edit Event"
+                subheading="Update the details, participants, and save your changes"
+                submitLabel="Save Changes"
+                submittingLabel="Saving..."
+                onSubmit={updateEvent}
+                onSuccess={() => navigate("/events")}
+              />
+            )
+          ) : (
+            <ReadOnlyDetail
+              eventItem={eventItem}
+              eyebrow={isPast ? "Event History" : "Member View"}
+            />
+          )
         ) : null}
       </div>
     </div>

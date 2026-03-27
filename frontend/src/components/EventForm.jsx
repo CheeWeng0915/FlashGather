@@ -19,10 +19,14 @@ const EMPTY_FORM = {
   eventDate: "",
   eventTime: "",
   location: "",
+  participantEmailInput: "",
+  participantEmails: [],
   capacity: "",
   lat: null,
   lng: null,
 };
+
+const PARTICIPANT_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const mapPinIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -110,12 +114,74 @@ const toEditableClockTime = (value) => {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
+const normalizeParticipantEmail = (value) =>
+  String(value || "").trim().toLowerCase();
+
+const dedupeParticipantEmails = (values) => {
+  if (!Array.isArray(values) || values.length === 0) {
+    return [];
+  }
+
+  const seen = new Set();
+
+  return values.reduce((emails, value) => {
+    const normalizedValue = normalizeParticipantEmail(value);
+    if (!normalizedValue || seen.has(normalizedValue)) {
+      return emails;
+    }
+
+    seen.add(normalizedValue);
+    emails.push(normalizedValue);
+    return emails;
+  }, []);
+};
+
+const parseParticipantEmailInput = (value) =>
+  dedupeParticipantEmails(
+    String(value || "")
+      .split(/[\n,;]+/)
+      .map((item) => item.trim()),
+  );
+
+const resolveParticipantEmails = (existingEmails, rawValue) => {
+  const nextExistingEmails = dedupeParticipantEmails(existingEmails);
+  const parsedEmails = parseParticipantEmailInput(rawValue);
+
+  if (parsedEmails.length === 0) {
+    return { emails: nextExistingEmails, parsedEmails: [] };
+  }
+
+  const invalidEmails = parsedEmails.filter(
+    (email) => !PARTICIPANT_EMAIL_PATTERN.test(email),
+  );
+
+  if (invalidEmails.length > 0) {
+    return {
+      emails: nextExistingEmails,
+      parsedEmails,
+      error:
+        invalidEmails.length === 1
+          ? `Enter a valid email address: ${invalidEmails[0]}`
+          : `Enter valid email addresses: ${invalidEmails.join(", ")}`,
+    };
+  }
+
+  return {
+    emails: dedupeParticipantEmails([...nextExistingEmails, ...parsedEmails]),
+    parsedEmails,
+  };
+};
+
 const buildFormState = (initialValues) => ({
   title: initialValues?.title ?? EMPTY_FORM.title,
   description: initialValues?.description ?? EMPTY_FORM.description,
   eventDate: toEditableDate(initialValues?.time),
   eventTime: toEditableClockTime(initialValues?.time),
   location: initialValues?.location ?? EMPTY_FORM.location,
+  participantEmailInput: EMPTY_FORM.participantEmailInput,
+  participantEmails: dedupeParticipantEmails(
+    initialValues?.participantEmails,
+  ),
   capacity:
     initialValues?.capacity === null || initialValues?.capacity === undefined
       ? EMPTY_FORM.capacity
@@ -153,16 +219,49 @@ function LocationPicker({ position, onPick }) {
   return position ? <Marker position={position} icon={mapPinIcon} /> : null;
 }
 
-function RecenterMap({ lat, lng }) {
+function RecenterMap({ center, zoom }) {
   const map = useMap();
 
   useEffect(() => {
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      map.setView({ lat, lng }, map.getZoom(), { animate: false });
+    if (!Number.isFinite(center?.lat) || !Number.isFinite(center?.lng)) {
+      return;
     }
-  }, [lat, lng, map]);
+
+    map.setView(center, zoom, { animate: false });
+
+    const frameId = window.requestAnimationFrame(() => {
+      map.invalidateSize();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [center, zoom, map]);
 
   return null;
+}
+
+function EventLocationMap({
+  position,
+  mapCenter,
+  zoom,
+  isMobileViewport,
+  onPick,
+}) {
+  const focusPoint = position || mapCenter;
+
+  return (
+    <MapContainer
+      center={focusPoint}
+      zoom={zoom}
+      scrollWheelZoom
+      dragging={!isMobileViewport}
+      className="h-full w-full"
+      style={{ overscrollBehavior: "contain" }}
+    >
+      <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
+      <RecenterMap center={focusPoint} zoom={zoom} />
+      <LocationPicker position={position} onPick={onPick} />
+    </MapContainer>
+  );
 }
 
 export default function EventForm({
@@ -188,6 +287,7 @@ export default function EventForm({
   const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState("");
+  const [participantEmailError, setParticipantEmailError] = useState("");
   const [isMobileViewport, setIsMobileViewport] = useState(
     () => window.innerWidth < 900,
   );
@@ -203,6 +303,7 @@ export default function EventForm({
     setForm(nextForm);
     setLocationResults([]);
     setLocationError("");
+    setParticipantEmailError("");
     setMapCenter(nextPosition);
   }, [initialValues]);
 
@@ -430,6 +531,53 @@ export default function EventForm({
     }));
   };
 
+  const handleParticipantInputChange = (value) => {
+    setParticipantEmailError("");
+    setForm((prev) => ({
+      ...prev,
+      participantEmailInput: value,
+    }));
+  };
+
+  const handleAddParticipant = () => {
+    const result = resolveParticipantEmails(
+      form.participantEmails,
+      form.participantEmailInput,
+    );
+
+    if (result.error) {
+      setParticipantEmailError(result.error);
+      return;
+    }
+
+    if (result.parsedEmails.length === 0) {
+      setParticipantEmailError("Enter at least one participant email.");
+      return;
+    }
+
+    if (result.emails.length === form.participantEmails.length) {
+      setParticipantEmailError("That participant is already added.");
+      return;
+    }
+
+    setParticipantEmailError("");
+    setForm((prev) => ({
+      ...prev,
+      participantEmailInput: "",
+      participantEmails: result.emails,
+    }));
+  };
+
+  const handleRemoveParticipant = (emailToRemove) => {
+    setParticipantEmailError("");
+    setForm((prev) => ({
+      ...prev,
+      participantEmails: prev.participantEmails.filter(
+        (email) => email !== emailToRemove,
+      ),
+    }));
+  };
+
   const position =
     form.lat !== null && form.lng !== null
       ? { lat: form.lat, lng: form.lng }
@@ -447,7 +595,26 @@ export default function EventForm({
       return;
     }
 
+    const participantResult = resolveParticipantEmails(
+      form.participantEmails,
+      form.participantEmailInput,
+    );
+
+    if (participantResult.error) {
+      setParticipantEmailError(participantResult.error);
+      return;
+    }
+
     setIsSubmitting(true);
+    setParticipantEmailError("");
+
+    if (participantResult.parsedEmails.length > 0) {
+      setForm((prev) => ({
+        ...prev,
+        participantEmailInput: "",
+        participantEmails: participantResult.emails,
+      }));
+    }
 
     const payload = {
       title: form.title.trim(),
@@ -457,6 +624,7 @@ export default function EventForm({
           ? `${form.eventDate}T${form.eventTime}`
           : null,
       location: form.location,
+      participantEmails: participantResult.emails,
       lat: form.lat,
       lng: form.lng,
       capacity: form.capacity ? Number(form.capacity) : null,
@@ -673,24 +841,13 @@ export default function EventForm({
             Click map to set exact coordinates.
           </p>
           <div className="mt-2 h-56 overflow-hidden rounded-lg border border-slate-300">
-            <MapContainer
-              center={mapCenter}
+            <EventLocationMap
+              position={position}
+              mapCenter={mapCenter}
               zoom={mapZoom}
-              scrollWheelZoom
-              dragging={!isMobileViewport}
-              className="h-full w-full"
-              style={{ overscrollBehavior: "contain" }}
-            >
-              <TileLayer
-                attribution={OSM_TILE_ATTRIBUTION}
-                url={OSM_TILE_URL}
-              />
-              <RecenterMap
-                lat={(position || mapCenter).lat}
-                lng={(position || mapCenter).lng}
-              />
-              <LocationPicker position={position} onPick={handlePickPoint} />
-            </MapContainer>
+              isMobileViewport={isMobileViewport}
+              onPick={handlePickPoint}
+            />
           </div>
           <p className="mt-2 text-xs text-slate-600">
             Coordinates:{" "}
@@ -712,6 +869,77 @@ export default function EventForm({
               setForm((prev) => ({ ...prev, description: event.target.value }))
             }
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-slate-900">
+            Participants
+          </label>
+          <div className="mt-2 space-y-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+            <input
+              className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+              placeholder="Enter participant email"
+              value={form.participantEmailInput}
+              onChange={(event) =>
+                handleParticipantInputChange(event.target.value)
+              }
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  handleAddParticipant();
+                }
+              }}
+            />
+
+            {form.participantEmails.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {form.participantEmails.map((email) => (
+                  <span
+                    key={email}
+                    className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-slate-200"
+                  >
+                    {email}
+                    <button
+                      type="button"
+                      aria-label={`Remove ${email}`}
+                      onClick={() => handleRemoveParticipant(email)}
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-full text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-200"
+                    >
+                      <svg
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={handleAddParticipant}
+              className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-500 focus:outline-none focus:ring-4 focus:ring-sky-500/20"
+            >
+              Add Participant
+            </button>
+          </div>
+          <p
+            className={`mt-2 text-xs ${
+              participantEmailError ? "text-red-600" : "text-slate-500"
+            }`}
+          >
+            {participantEmailError ||
+              "Enter email addresses of participants to invite to this event. Only registered users can be added in this version."}
+          </p>
         </div>
 
         <div>

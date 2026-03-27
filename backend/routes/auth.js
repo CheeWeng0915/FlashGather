@@ -12,10 +12,13 @@ const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
 router.use(requireDatabase);
 
+const toRoleValue = (user) => (user?.role === 'admin' ? 'admin' : 'member');
+
 const formatUserResponse = (user) => ({
   id: String(user._id),
   username: user.username,
   email: user.email,
+  role: toRoleValue(user),
   createdAt: user.createdAt,
   updatedAt: user.updatedAt
 });
@@ -41,21 +44,27 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, email, password } = req.body;
+    const normalizedUsername = req.body.username.trim();
+    const normalizedEmail = req.body.email.trim().toLowerCase();
+    const { password } = req.body;
 
     try {
-      const existingByEmail = await User.findOne({ email });
+      const existingByEmail = await User.findOne({ email: normalizedEmail });
       if (existingByEmail) {
         return res.status(400).json({ error: 'User already exists' });
       }
 
-      const existingByUsername = await User.findOne({ username });
+      const existingByUsername = await User.findOne({ username: normalizedUsername });
       if (existingByUsername) {
         return res.status(400).json({ error: 'Username is already taken' });
       }
 
       const hashed = await bcrypt.hash(password, 10);
-      const user = new User({ username, email, password: hashed });
+      const user = new User({
+        username: normalizedUsername,
+        email: normalizedEmail,
+        password: hashed
+      });
       await user.save();
 
       return res.json(createAuthResponse(user));
@@ -75,10 +84,11 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const normalizedEmail = req.body.email.trim().toLowerCase();
+    const { password } = req.body;
 
     try {
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email: normalizedEmail });
       if (!user) {
         return res.status(400).json({ error: 'User not found' });
       }
