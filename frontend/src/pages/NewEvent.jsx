@@ -51,10 +51,10 @@ export default function NewEvent() {
             </h1>
           </div>
           <Link
-            to="/"
+            to="/events"
             className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
           >
-            Back to Home
+            Back to Events
           </Link>
         </div>
 
@@ -64,7 +64,7 @@ export default function NewEvent() {
           submitLabel="Create Event"
           submittingLabel="Creating..."
           onSubmit={createEvent}
-          onSuccess={() => navigate("/")}
+          onSuccess={() => navigate("/events")}
         />
       </div>
     </div>

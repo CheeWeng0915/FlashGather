@@ -4,6 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { ToastProvider } from './components/ToastProvider'
 import './index.css'
+import { applyTheme, getPreferredTheme } from './utils/theme'
+
+applyTheme(getPreferredTheme())
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -387,3 +387,63 @@
     min-width: 0;
   }
 }
+
+html.dark .register-page {
+  --register-ink: #e2e8f0;
+  --register-muted: #94a3b8;
+  background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+}
+
+html.dark .register-page::before {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.78) 0%, rgba(190, 24, 93, 0.74) 100%);
+}
+
+html.dark .register-page::after {
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.42) 0%, rgba(16, 185, 129, 0.2) 60%, transparent 62%);
+}
+
+html.dark .register-shell {
+  background: rgba(15, 23, 42, 0.82);
+  box-shadow:
+    0 32px 60px rgba(2, 6, 23, 0.38),
+    0 10px 22px rgba(2, 6, 23, 0.24);
+}
+
+html.dark .register-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.92));
+}
+
+html.dark .register-field {
+  border-color: rgba(71, 85, 105, 0.82);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+html.dark .register-field-icon,
+html.dark .register-input::placeholder {
+  color: #64748b;
+}
+
+html.dark .register-input {
+  color: #e2e8f0;
+}
+
+html.dark .register-toggle {
+  background: rgba(45, 212, 191, 0.14);
+  color: #99f6e4;
+}
+
+html.dark .register-toggle:hover:not(:disabled) {
+  background: rgba(45, 212, 191, 0.22);
+}
+
+html.dark .register-error {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.3);
+  border-color: rgba(248, 113, 113, 0.22);
+}
+
+html.dark .register-success {
+  color: #bbf7d0;
+  background: rgba(6, 95, 70, 0.3);
+  border-color: rgba(52, 211, 153, 0.2);
+}

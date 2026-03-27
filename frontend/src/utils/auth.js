@@ -63,6 +63,14 @@ export const getStoredUser = () => {
   }
 };
 
+export const getStoredUserRole = () => {
+  const user = getStoredUser();
+  return user?.role === "admin" ? "admin" : "member";
+};
+
+export const isStoredUserAdmin = () =>
+  hasStoredUserSession() && getStoredUserRole() === "admin";
+
 export const setStoredUser = (user) => {
   if (!user) {
     localStorage.removeItem(USER_STORAGE_KEY);
