@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../config";
-import { useToast } from "../components/ToastProvider";
+import { useToast } from "../components/toastContext";
 import {
   clearStoredUserSession,
   getAuthHeaders,

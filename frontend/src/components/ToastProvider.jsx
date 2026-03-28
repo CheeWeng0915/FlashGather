@@ -1,6 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-
-const ToastContext = createContext(null);
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ToastContext } from './toastContext';
 
 let nextToastId = 1;
 
@@ -42,9 +41,11 @@ export function ToastProvider({ children }) {
   }, [dismissToast]);
 
   useEffect(() => {
+    const activeTimeouts = timeoutIds.current;
+
     return () => {
-      timeoutIds.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
-      timeoutIds.current.clear();
+      activeTimeouts.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      activeTimeouts.clear();
     };
   }, []);
 
@@ -82,14 +83,4 @@ export function ToastProvider({ children }) {
       </div>
     </ToastContext.Provider>
   );
-}
-
-export function useToast() {
-  const context = useContext(ToastContext);
-
-  if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
-  }
-
-  return context;
 }

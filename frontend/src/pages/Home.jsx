@@ -49,7 +49,7 @@ function MemberHomePage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/events`, {
+      const res = await fetch(`${API_BASE}/events?scope=joined`, {
         headers: getAuthHeaders(),
       });
       if (!res.ok) {
@@ -171,7 +171,7 @@ function MemberHomePage() {
               </button>
             }
             onOpen={openEvent}
-            isAdmin={false}
+            showManageActions={false}
           />
         )}
       </div>

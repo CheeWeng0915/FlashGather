@@ -1,18 +1,5 @@
-import { isPastEvent } from "../utils/events";
-import { formatDisplayDateTime } from "../utils/dateDisplay";
-
-const formatEventTime = (value) => {
-  if (!value) {
-    return "To be announced";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return formatDisplayDateTime(date);
-};
+import { formatDisplayDateRange } from "../utils/dateDisplay";
+import { getEventDateRange, isPastEvent } from "../utils/events";
 
 export default function EventListPanel({
   events,
@@ -23,7 +10,7 @@ export default function EventListPanel({
   toolbar = null,
   onOpen,
   onDelete,
-  isAdmin,
+  showManageActions = false,
 }) {
   return (
     <section className="mt-8">
@@ -64,14 +51,16 @@ export default function EventListPanel({
 
       <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {events.map((eventItem) => {
-          const isLockedPastEvent = isAdmin && isPastEvent(eventItem);
+          const isLockedPastEvent = showManageActions && isPastEvent(eventItem);
+          const { startDate, endDate } = getEventDateRange(eventItem);
+          const ownerLabel = eventItem.owner?.username || "Unknown owner";
 
           return (
             <li
               key={eventItem.id || eventItem._id}
               className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10"
             >
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500"></div>
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-sky-500"></div>
 
               <div className="absolute right-5 top-5">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -90,7 +79,7 @@ export default function EventListPanel({
                 {eventItem.title}
               </h3>
               <p className="mt-3 line-clamp-2 text-sm text-slate-600">
-                {eventItem.description}
+                {eventItem.description || "No description added yet."}
               </p>
 
               <dl className="mt-5 space-y-3 border-t border-slate-100 pt-4">
@@ -106,24 +95,24 @@ export default function EventListPanel({
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
                     <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                      Time
+                      Event Dates
                     </dt>
-                    <dd className="mt-0.5 truncate text-sm font-medium text-slate-900">
-                      {formatEventTime(eventItem.time)}
+                    <dd className="mt-0.5 text-sm font-medium text-slate-900">
+                      {formatDisplayDateRange(startDate, endDate)}
                     </dd>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+                  <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100">
                     <svg
-                      className="h-4 w-4 text-purple-600"
+                      className="h-4 w-4 text-sky-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -132,29 +121,23 @@ export default function EventListPanel({
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        d="M5.121 17.804A9 9 0 1118.88 6.196M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                       />
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
                     <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                      Location
+                      Owner
                     </dt>
                     <dd className="mt-0.5 truncate text-sm font-medium text-slate-900">
-                      {eventItem.location || "To be announced"}
+                      {ownerLabel}
                     </dd>
                   </div>
                 </div>
               </dl>
 
               <div className="relative z-10 mt-6 flex flex-col gap-2 sm:flex-row">
-                {isAdmin ? (
+                {showManageActions ? (
                   isLockedPastEvent ? (
                     <>
                       <button

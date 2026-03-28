@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import EventForm from "../components/EventForm";
 import { API_BASE } from "../config";
-import { getAuthHeaders } from "../utils/auth";
+import { getAuthHeaders, getStoredUserRole } from "../utils/auth";
 
 const readApiError = async (response, fallbackMessage) => {
   let errorMessage = fallbackMessage;
@@ -23,6 +23,8 @@ const readApiError = async (response, fallbackMessage) => {
 
 export default function NewEvent() {
   const navigate = useNavigate();
+  const isAdmin = getStoredUserRole() === "admin";
+  const backPath = isAdmin ? "/events" : "/my-events";
 
   const createEvent = async (payload) => {
     const response = await fetch(`${API_BASE}/events`, {
@@ -51,20 +53,20 @@ export default function NewEvent() {
             </h1>
           </div>
           <Link
-            to="/events"
+            to={backPath}
             className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 sm:w-auto"
           >
-            Back to Events
+            {isAdmin ? "Back to Events" : "Back to My Events"}
           </Link>
         </div>
 
         <EventForm
           heading="Create New Event"
-          subheading="Fill in the details to get started"
+          subheading="Set the date range and invite participants"
           submitLabel="Create Event"
           submittingLabel="Creating..."
           onSubmit={createEvent}
-          onSuccess={() => navigate("/events")}
+          onSuccess={() => navigate(backPath)}
         />
       </div>
     </div>

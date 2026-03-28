@@ -9,7 +9,7 @@ import {
 } from "../utils/auth";
 import "./Login.css";
 import logo from "../assets/logo.jpg";
-import { useToast } from "../components/ToastProvider";
+import { useToast } from "../components/toastContext";
 import { fetchWithTimeout, isAbortError } from "../utils/http";
 
 const getErrorMessage = (payload, fallbackMessage) => {

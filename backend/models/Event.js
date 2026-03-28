@@ -14,6 +14,19 @@ const EventSchema = new mongoose.Schema(
       maxlength: 1000,
       default: ''
     },
+    startDate: {
+      type: String,
+      trim: true,
+      match: /^\d{4}-\d{2}-\d{2}$/,
+      default: null
+    },
+    endDate: {
+      type: String,
+      trim: true,
+      match: /^\d{4}-\d{2}-\d{2}$/,
+      default: null
+    },
+    // Legacy fields retained for migration compatibility.
     time: {
       type: Date,
       default: null
