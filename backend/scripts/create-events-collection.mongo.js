@@ -37,10 +37,6 @@ const validator = {
         minimum: -180,
         maximum: 180
       },
-      capacity: {
-        bsonType: ['int', 'long', 'double', 'decimal', 'null'],
-        minimum: 1
-      },
       userId: {
         bsonType: ['objectId', 'null']
       },

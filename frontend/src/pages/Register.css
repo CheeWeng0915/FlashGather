@@ -11,6 +11,7 @@
   padding: 24px;
   position: relative;
   overflow: hidden;
+  overflow-x: hidden;
   background:
     linear-gradient(180deg, #f8fbfc 0%, #eef4f8 100%);
 }
@@ -368,6 +369,10 @@
     padding: 20px 16px;
   }
 
+  .register-side-button {
+    width: 100%;
+  }
+
   .register-card {
     padding: 22px 14px 20px;
   }
@@ -380,6 +385,12 @@
     min-height: 52px;
     padding: 0 14px;
     border-radius: 14px;
+  }
+
+  .register-toggle {
+    min-width: 58px;
+    padding: 8px 10px;
+    border-radius: 10px;
   }
 
   .register-submit {

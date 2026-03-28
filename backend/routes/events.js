@@ -52,10 +52,6 @@ const createValidators = [
     .optional({ values: 'falsy' })
     .isFloat({ min: -180, max: 180 })
     .withMessage('Longitude must be between -180 and 180'),
-  body('capacity')
-    .optional({ values: 'falsy' })
-    .custom((value) => Number.isInteger(Number(value)) && Number(value) > 0)
-    .withMessage('Capacity must be a positive integer'),
   ...participantEmailValidators
 ]
 
@@ -85,10 +81,6 @@ const updateValidators = [
     .optional({ values: 'falsy' })
     .isFloat({ min: -180, max: 180 })
     .withMessage('Longitude must be between -180 and 180'),
-  body('capacity')
-    .optional({ values: 'falsy' })
-    .custom((value) => Number.isInteger(Number(value)) && Number(value) > 0)
-    .withMessage('Capacity must be a positive integer'),
   ...participantEmailValidators
 ]
 
@@ -144,22 +136,24 @@ const normalizePayload = (input) => {
   if (Object.prototype.hasOwnProperty.call(input, 'lng')) {
     payload.lng = input.lng === null || input.lng === '' ? null : Number(input.lng)
   }
-  if (Object.prototype.hasOwnProperty.call(input, 'capacity')) {
-    payload.capacity = input.capacity ? Number(input.capacity) : null
-  }
 
   return payload
 }
 
 const serializeEvent = (eventDoc) => {
   if (typeof eventDoc?.toJSON === 'function') {
-    return eventDoc.toJSON()
+    const serialized = eventDoc.toJSON()
+    delete serialized.capacity
+    return serialized
   }
 
-  return {
+  const serialized = {
     ...eventDoc,
     id: String(eventDoc._id)
   }
+
+  delete serialized.capacity
+  return serialized
 }
 
 const getParticipantCountMap = async (eventIds) => {

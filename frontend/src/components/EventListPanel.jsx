@@ -38,7 +38,7 @@ export default function EventListPanel({
       {filters ? <div className="mb-6">{filters}</div> : null}
 
       {events.length === 0 ? (
-        <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+        <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center sm:p-12">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-blue-50/50"></div>
           <div className="relative">
             <svg
@@ -153,7 +153,7 @@ export default function EventListPanel({
                 </div>
               </dl>
 
-              <div className="relative z-10 mt-6 flex gap-2">
+              <div className="relative z-10 mt-6 flex flex-col gap-2 sm:flex-row">
                 {isAdmin ? (
                   isLockedPastEvent ? (
                     <>

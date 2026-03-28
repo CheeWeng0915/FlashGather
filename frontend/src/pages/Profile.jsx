@@ -309,7 +309,6 @@ export default function Profile() {
                   label="Role"
                   value={profile.role === 'admin' ? 'Admin' : 'Member'}
                 />
-                <DetailRow label="User ID" value={profile.id} />
                 <DetailRow label="Member since" value={formatDate(profile.createdAt)} />
                 <DetailRow label="Last updated" value={formatDate(profile.updatedAt)} />
               </dl>
