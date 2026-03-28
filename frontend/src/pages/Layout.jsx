@@ -12,11 +12,12 @@ import {
   persistTheme
 } from '../utils/theme'
 import logo from '../assets/logo.jpg'
-import { useToast } from '../components/ToastProvider'
+import { useToast } from '../components/toastContext'
 
 const menuItems = [
   { to: '/', label: 'Home', requiresAuth: true },
   { to: '/events', label: 'Events', requiresAuth: true, requiresAdmin: true },
+  { to: '/my-events', label: 'My Events', requiresAuth: true, requiresMember: true },
   { to: '/users', label: 'Users', requiresAuth: true, requiresAdmin: true },
   { to: '/history', label: 'History', requiresAuth: true, requiresMember: true },
   { to: '/profile', label: 'Profile', requiresAuth: true },
@@ -79,10 +80,6 @@ export default function Layout() {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
-
-  useEffect(() => {
-    setIsSidebarOpen(false)
-  }, [location.pathname])
 
   useEffect(() => {
     applyTheme(theme)

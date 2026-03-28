@@ -5,6 +5,7 @@ import History from "./pages/History";
 import Home from "./pages/Home";
 import Layout from "./pages/Layout";
 import Login from "./pages/Login";
+import MyEvents from "./pages/MyEvents";
 import NewEvent from "./pages/NewEvent";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
@@ -80,11 +81,19 @@ export default function App() {
           }
         />
         <Route
+          path="/my-events"
+          element={
+            <RequireMember>
+              <MyEvents />
+            </RequireMember>
+          }
+        />
+        <Route
           path="/new-event"
           element={
-            <RequireAdmin>
+            <RequireAuth>
               <NewEvent />
-            </RequireAdmin>
+            </RequireAuth>
           }
         />
         <Route

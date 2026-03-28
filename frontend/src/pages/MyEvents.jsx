@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import EventFiltersBar from "../components/EventFiltersBar";
 import EventListPanel from "../components/EventListPanel";
 import { API_BASE } from "../config";
@@ -7,10 +7,10 @@ import { getAuthHeaders } from "../utils/auth";
 import {
   filterEventsByCriteria,
   hasActiveEventFilters,
-  splitEventsByTimeline,
+  sortEventsByTimeline,
 } from "../utils/events";
 
-export default function History() {
+export default function MyEvents() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,17 +22,14 @@ export default function History() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/events?scope=joined`, {
+      const res = await fetch(`${API_BASE}/events?scope=created`, {
         headers: getAuthHeaders(),
       });
       if (!res.ok) {
         throw new Error("Failed to fetch events");
       }
       const data = await res.json();
-      const { historyEvents } = splitEventsByTimeline(
-        Array.isArray(data) ? data : [],
-      );
-      setEvents(historyEvents);
+      setEvents(sortEventsByTimeline(Array.isArray(data) ? data : []));
     } catch (error) {
       console.error("Failed to fetch events:", error);
     } finally {
@@ -47,6 +44,34 @@ export default function History() {
     }
 
     navigate(`/events/${eventId}`);
+  };
+
+  const deleteEvent = async (eventItem) => {
+    const eventId = eventItem.id || eventItem._id;
+    if (!eventId) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete event "${eventItem.title}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/events/${eventId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Delete failed");
+      }
+
+      await fetchEvents();
+    } catch (error) {
+      alert(error.message || "Delete failed");
+    }
   };
 
   useEffect(() => {
@@ -65,14 +90,14 @@ export default function History() {
   });
   const summary = hasActiveFilters
     ? `${filteredEvents.length} ${
-        filteredEvents.length === 1 ? "past event matches" : "past events match"
+        filteredEvents.length === 1 ? "event matches" : "events match"
       } your filters`
     : `${filteredEvents.length} ${
-        filteredEvents.length === 1 ? "past event" : "past events"
-      }`;
+        filteredEvents.length === 1 ? "event" : "events"
+      } created by you`;
   const emptyMessage = hasActiveFilters
-    ? "No past events match your current search or date range."
-    : "No past events yet. Completed events will appear here.";
+    ? "No created events match your current search or date range."
+    : "Create your first event to start building an itinerary.";
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
@@ -100,14 +125,14 @@ export default function History() {
                 ></path>
               </svg>
               <p className="mt-4 text-sm text-slate-600">
-                Loading event history...
+                Loading your events...
               </p>
             </div>
           </div>
         ) : (
           <EventListPanel
             events={filteredEvents}
-            heading="Event History"
+            heading="My Events"
             summary={summary}
             emptyMessage={emptyMessage}
             filters={
@@ -126,28 +151,39 @@ export default function History() {
               />
             }
             toolbar={
-              <button
-                onClick={fetchEvents}
-                className="group relative inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/30 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:w-auto"
-              >
-                <svg
-                  className="h-4 w-4 transition-transform group-hover:rotate-180"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={fetchEvents}
+                  className="group relative inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/30 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:flex-none"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                Refresh
-              </button>
+                  <svg
+                    className="h-4 w-4 transition-transform group-hover:rotate-180"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  Refresh
+                </button>
+
+                <Link
+                  to="/new-event"
+                  aria-label="Create new event"
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-2xl font-semibold leading-none text-white shadow-lg shadow-emerald-600/30 transition-all hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-xl hover:shadow-emerald-600/40 focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
+                >
+                  +
+                </Link>
+              </div>
             }
             onOpen={openEvent}
-            showManageActions={false}
+            onDelete={deleteEvent}
+            showManageActions
           />
         )}
       </div>

@@ -7,6 +7,7 @@ import { getAuthHeaders } from "../utils/auth";
 import {
   filterEventsByCriteria,
   hasActiveEventFilters,
+  sortEventsByTimeline,
 } from "../utils/events";
 
 export default function Events() {
@@ -21,14 +22,14 @@ export default function Events() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/events`, {
+      const res = await fetch(`${API_BASE}/events?scope=all`, {
         headers: getAuthHeaders(),
       });
       if (!res.ok) {
         throw new Error("Failed to fetch events");
       }
       const data = await res.json();
-      setEvents(Array.isArray(data) ? data : []);
+      setEvents(sortEventsByTimeline(Array.isArray(data) ? data : []));
     } catch (error) {
       console.error("Failed to fetch events:", error);
     } finally {
@@ -92,10 +93,10 @@ export default function Events() {
       } your filters`
     : `${filteredEvents.length} ${
         filteredEvents.length === 1 ? "event" : "events"
-      } created`;
+      } across the workspace`;
   const emptyMessage = hasActiveFilters
     ? "No events match your current search or date range."
-    : "Get started by creating your first event using the + button above.";
+    : "No events have been created yet.";
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
@@ -128,7 +129,7 @@ export default function Events() {
         ) : (
           <EventListPanel
             events={filteredEvents}
-            heading="Your Created Events"
+            heading="All Events"
             summary={summary}
             emptyMessage={emptyMessage}
             filters={
@@ -179,7 +180,7 @@ export default function Events() {
             }
             onOpen={openEvent}
             onDelete={deleteEvent}
-            isAdmin
+            showManageActions
           />
         )}
       </div>

@@ -1,55 +1,70 @@
-const getEventDate = (value) => {
-  const rawValue =
-    value && typeof value === "object" && "time" in value ? value.time : value;
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-  if (!rawValue) {
+const padDatePart = (value) => String(value).padStart(2, "0");
+
+const toLocalDateString = (value) => {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
     return null;
   }
 
-  const date = new Date(rawValue);
-  return Number.isNaN(date.getTime()) ? null : date;
+  return [
+    date.getFullYear(),
+    padDatePart(date.getMonth() + 1),
+    padDatePart(date.getDate()),
+  ].join("-");
 };
 
-const getStartOfToday = () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return today;
-};
-
-export const isPastEvent = (value) => {
-  const date = getEventDate(value);
-  if (!date) {
-    return false;
+const normalizeDateValue = (value) => {
+  const normalized = String(value || "").trim();
+  if (DATE_ONLY_PATTERN.test(normalized)) {
+    return normalized;
   }
 
-  return date < getStartOfToday();
+  return toLocalDateString(value);
 };
 
 const normalizeEventSearch = (value) => String(value || "").trim().toLowerCase();
 
-const parseDateInputValue = (value, endOfDay = false) => {
-  if (!value) {
-    return null;
+const compareAscendingDate = (left, right) => {
+  if (!left && !right) {
+    return 0;
   }
 
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value).trim());
-  if (!match) {
-    return null;
+  if (!left) {
+    return 1;
   }
 
-  const parsed = new Date(
-    Number(match[1]),
-    Number(match[2]) - 1,
-    Number(match[3]),
-  );
-
-  if (endOfDay) {
-    parsed.setHours(23, 59, 59, 999);
-  } else {
-    parsed.setHours(0, 0, 0, 0);
+  if (!right) {
+    return -1;
   }
 
-  return parsed;
+  return left.localeCompare(right);
+};
+
+const compareDescendingDate = (left, right) => compareAscendingDate(right, left);
+
+export const getTodayDateString = () => toLocalDateString(new Date());
+
+export const getEventDateRange = (eventItem) => {
+  const startDate = normalizeDateValue(eventItem?.startDate || eventItem?.time);
+  const endDate = normalizeDateValue(eventItem?.endDate || eventItem?.time);
+
+  return {
+    startDate,
+    endDate,
+  };
+};
+
+export const isPastEvent = (value) => {
+  const { endDate } =
+    value && typeof value === "object" ? getEventDateRange(value) : { endDate: normalizeDateValue(value) };
+
+  if (!endDate) {
+    return false;
+  }
+
+  return endDate < getTodayDateString();
 };
 
 export const hasActiveEventFilters = ({
@@ -60,9 +75,9 @@ export const hasActiveEventFilters = ({
 
 export const filterEventsByCriteria = (events, criteria = {}) => {
   const normalizedSearch = normalizeEventSearch(criteria.searchTerm);
-  const startBoundary = parseDateInputValue(criteria.startDate);
-  const endBoundary = parseDateInputValue(criteria.endDate, true);
-  const hasDateFilter = Boolean(startBoundary || endBoundary);
+  const filterStart = normalizeDateValue(criteria.startDate);
+  const filterEnd = normalizeDateValue(criteria.endDate);
+  const hasDateFilter = Boolean(filterStart || filterEnd);
 
   return (Array.isArray(events) ? events : []).filter((eventItem) => {
     if (normalizedSearch) {
@@ -76,16 +91,16 @@ export const filterEventsByCriteria = (events, criteria = {}) => {
       return true;
     }
 
-    const eventDate = getEventDate(eventItem);
-    if (!eventDate) {
+    const { startDate, endDate } = getEventDateRange(eventItem);
+    if (!startDate || !endDate) {
       return false;
     }
 
-    if (startBoundary && eventDate < startBoundary) {
+    if (filterStart && endDate < filterStart) {
       return false;
     }
 
-    if (endBoundary && eventDate > endBoundary) {
+    if (filterEnd && startDate > filterEnd) {
       return false;
     }
 
@@ -93,27 +108,44 @@ export const filterEventsByCriteria = (events, criteria = {}) => {
   });
 };
 
-const compareAscendingByTime = (left, right) => {
-  const leftDate = getEventDate(left);
-  const rightDate = getEventDate(right);
+const compareAscendingByDateRange = (left, right) => {
+  const leftRange = getEventDateRange(left);
+  const rightRange = getEventDateRange(right);
+  const startComparison = compareAscendingDate(leftRange.startDate, rightRange.startDate);
 
-  if (!leftDate && !rightDate) {
-    return 0;
+  if (startComparison !== 0) {
+    return startComparison;
   }
 
-  if (!leftDate) {
-    return 1;
+  const endComparison = compareAscendingDate(leftRange.endDate, rightRange.endDate);
+  if (endComparison !== 0) {
+    return endComparison;
   }
 
-  if (!rightDate) {
-    return -1;
-  }
-
-  return leftDate.getTime() - rightDate.getTime();
+  return String(left?.title || "").localeCompare(String(right?.title || ""));
 };
 
-const compareDescendingByTime = (left, right) =>
-  compareAscendingByTime(right, left);
+const compareDescendingByDateRange = (left, right) => {
+  const leftRange = getEventDateRange(left);
+  const rightRange = getEventDateRange(right);
+  const endComparison = compareDescendingDate(leftRange.endDate, rightRange.endDate);
+
+  if (endComparison !== 0) {
+    return endComparison;
+  }
+
+  const startComparison = compareDescendingDate(leftRange.startDate, rightRange.startDate);
+  if (startComparison !== 0) {
+    return startComparison;
+  }
+
+  return String(left?.title || "").localeCompare(String(right?.title || ""));
+};
+
+export const sortEventsByTimeline = (events, { descending = false } = {}) =>
+  [...(Array.isArray(events) ? events : [])].sort(
+    descending ? compareDescendingByDateRange : compareAscendingByDateRange,
+  );
 
 export const splitEventsByTimeline = (events) => {
   const upcomingEvents = [];
@@ -127,8 +159,8 @@ export const splitEventsByTimeline = (events) => {
     }
   }
 
-  upcomingEvents.sort(compareAscendingByTime);
-  historyEvents.sort(compareDescendingByTime);
+  upcomingEvents.sort(compareAscendingByDateRange);
+  historyEvents.sort(compareDescendingByDateRange);
 
   return { upcomingEvents, historyEvents };
 };

@@ -8,7 +8,7 @@ const targetDb = db.getSiblingDB(dbName);
 const validator = {
   $jsonSchema: {
     bsonType: 'object',
-    required: ['title'],
+    required: ['title', 'userId', 'startDate', 'endDate'],
     properties: {
       title: {
         bsonType: 'string',
@@ -20,6 +20,15 @@ const validator = {
         bsonType: ['string', 'null'],
         maxLength: 1000
       },
+      startDate: {
+        bsonType: ['string', 'null'],
+        pattern: '^\\d{4}-\\d{2}-\\d{2}$'
+      },
+      endDate: {
+        bsonType: ['string', 'null'],
+        pattern: '^\\d{4}-\\d{2}-\\d{2}$'
+      },
+      // Legacy fields retained during migration.
       time: {
         bsonType: ['date', 'null']
       },
@@ -81,6 +90,8 @@ if (!existing.includes(collectionName)) {
 
 targetDb.events.createIndex({ createdAt: -1 }, { name: 'idx_events_createdAt_desc' });
 targetDb.events.createIndex({ userId: 1, createdAt: -1 }, { name: 'idx_events_userId_createdAt_desc' });
+targetDb.events.createIndex({ startDate: 1, endDate: 1 }, { name: 'idx_events_start_end_asc' });
+targetDb.events.createIndex({ endDate: 1 }, { name: 'idx_events_endDate_asc' });
 targetDb.events.createIndex({ time: 1 }, { name: 'idx_events_time_asc' });
 targetDb.events.createIndex({ lat: 1, lng: 1 }, { name: 'idx_events_lat_lng' });
 targetDb.events.createIndex({ title: 'text', description: 'text' }, { name: 'idx_events_text_search' });

@@ -8,7 +8,7 @@ import {
 } from '../utils/auth';
 import { formatDisplayDate } from '../utils/dateDisplay';
 import { fetchWithTimeout, isAbortError } from '../utils/http';
-import { useToast } from '../components/ToastProvider';
+import { useToast } from '../components/toastContext';
 import './Profile.css';
 
 const SESSION_ERROR_MESSAGES = new Set([
