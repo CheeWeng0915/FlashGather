@@ -1,23 +1,23 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { API_BASE } from '../config';
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { API_BASE } from "../config";
 import {
   TOKEN_STORAGE_KEY,
   clearStoredUserSession,
   hasStoredUserSession,
-  setStoredUser
-} from '../utils/auth';
-import './Login.css';
-import logo from '../assets/logo.jpg';
-import { useToast } from '../components/ToastProvider';
-import { fetchWithTimeout, isAbortError } from '../utils/http';
+  setStoredUser,
+} from "../utils/auth";
+import "./Login.css";
+import logo from "../assets/logo.jpg";
+import { useToast } from "../components/ToastProvider";
+import { fetchWithTimeout, isAbortError } from "../utils/http";
 
 const getErrorMessage = (payload, fallbackMessage) => {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
     return payload.errors[0]?.msg || fallbackMessage;
   }
 
-  if (typeof payload?.error === 'string' && payload.error.trim()) {
+  if (typeof payload?.error === "string" && payload.error.trim()) {
     return payload.error;
   }
 
@@ -27,16 +27,16 @@ const getErrorMessage = (payload, fallbackMessage) => {
 export default function Login() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (hasStoredUserSession()) {
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
       return;
     }
 
@@ -52,20 +52,20 @@ export default function Login() {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (!normalizedEmail || !password) {
-      const message = 'Please enter both email and password.';
+      const message = "Please enter both email and password.";
       setError(message);
-      showToast({ type: 'error', title: 'Sign In Failed', message });
+      showToast({ type: "error", title: "Sign In Failed", message });
       return;
     }
 
-    if (!normalizedEmail.includes('@')) {
-      const message = 'Please enter a valid email address.';
+    if (!normalizedEmail.includes("@")) {
+      const message = "Please enter a valid email address.";
       setError(message);
-      showToast({ type: 'error', title: 'Sign In Failed', message });
+      showToast({ type: "error", title: "Sign In Failed", message });
       return;
     }
 
@@ -73,27 +73,27 @@ export default function Login() {
 
     try {
       const response = await fetchWithTimeout(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail, password })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, password }),
       });
 
-      const contentType = response.headers.get('content-type') || '';
-      const data = contentType.includes('application/json')
+      const contentType = response.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
         ? await response.json()
         : null;
 
       if (!response.ok) {
-        const message = getErrorMessage(data, 'Login failed.');
+        const message = getErrorMessage(data, "Login failed.");
         setError(message);
-        showToast({ type: 'error', title: 'Sign In Failed', message });
+        showToast({ type: "error", title: "Sign In Failed", message });
         return;
       }
 
       if (!data?.token) {
-        const message = 'Login succeeded but no token was returned.';
+        const message = "Login succeeded but no token was returned.";
         setError(message);
-        showToast({ type: 'error', title: 'Sign In Failed', message });
+        showToast({ type: "error", title: "Sign In Failed", message });
         return;
       }
 
@@ -101,24 +101,24 @@ export default function Login() {
 
       setStoredUser(data.user);
 
-      setSuccess('Login successful. Redirecting...');
+      setSuccess("Login successful. Redirecting...");
       showToast({
-        type: 'success',
-        title: 'Signed In',
-        message: 'Welcome back to FlashGather.'
+        type: "success",
+        title: "Signed In",
+        message: "Welcome back to FlashGather.",
       });
-      setEmail('');
-      setPassword('');
+      setEmail("");
+      setPassword("");
 
       window.setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate("/", { replace: true });
       }, 500);
     } catch (error) {
       const message = isAbortError(error)
-        ? 'The server is taking too long to respond. If Render is waking up, wait a few seconds and try again.'
-        : 'Cannot connect to server. If you are running locally, make sure the backend is running and MongoDB is reachable.';
+        ? "The server is taking too long to respond. If Render is waking up, wait a few seconds and try again."
+        : "Cannot connect to server. If you are running locally, make sure the backend is running and MongoDB is reachable.";
       setError(message);
-      showToast({ type: 'error', title: 'Sign In Failed', message });
+      showToast({ type: "error", title: "Sign In Failed", message });
     } finally {
       setIsLoading(false);
     }
@@ -129,16 +129,20 @@ export default function Login() {
       <div className="login-shell">
         <aside className="login-side">
           <div className="login-brand">
-            <img className="login-brand-mark" src={logo} alt="FlashGather logo" />
-            <span>FlashGather</span>
+            <img
+              className="login-brand-mark"
+              src={logo}
+              alt="FlashGather logo"
+            />
+            <span>Flash Gather</span>
           </div>
 
           <div className="login-side-copy">
             <p className="login-side-kicker">New around here?</p>
             <h1 className="login-side-title">Join the Crew</h1>
             <p className="login-side-text">
-              Create your account to plan events, gather friends, and keep
-              every meetup in one place.
+              Create your account to plan events, gather friends, and keep every
+              meetup in one place.
             </p>
           </div>
 
@@ -194,7 +198,7 @@ export default function Login() {
                 <input
                   className="login-input"
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Password"
@@ -206,17 +210,26 @@ export default function Login() {
                   type="button"
                   className="login-toggle"
                   onClick={() => setShowPassword((value) => !value)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   disabled={isLoading}
                 >
-                  {showPassword ? '👁' : '⌣'}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </label>
 
-              {error ? <p className="login-message login-error">{error}</p> : null}
-              {success ? <p className="login-message login-success">{success}</p> : null}
+              {error ? (
+                <p className="login-message login-error">{error}</p>
+              ) : null}
+              {success ? (
+                <p className="login-message login-success">{success}</p>
+              ) : null}
 
-              <button type="submit" disabled={isLoading} className="login-submit">
-                {isLoading ? 'Signing In...' : 'Sign In'}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="login-submit"
+              >
+                {isLoading ? "Signing In..." : "Sign In"}
               </button>
             </form>
           </div>

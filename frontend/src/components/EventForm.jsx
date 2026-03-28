@@ -21,7 +21,6 @@ const EMPTY_FORM = {
   location: "",
   participantEmailInput: "",
   participantEmails: [],
-  capacity: "",
   lat: null,
   lng: null,
 };
@@ -182,10 +181,6 @@ const buildFormState = (initialValues) => ({
   participantEmails: dedupeParticipantEmails(
     initialValues?.participantEmails,
   ),
-  capacity:
-    initialValues?.capacity === null || initialValues?.capacity === undefined
-      ? EMPTY_FORM.capacity
-      : String(initialValues.capacity),
   lat: toNullableNumber(initialValues?.lat),
   lng: toNullableNumber(initialValues?.lng),
 });
@@ -627,7 +622,6 @@ export default function EventForm({
       participantEmails: participantResult.emails,
       lat: form.lat,
       lng: form.lng,
-      capacity: form.capacity ? Number(form.capacity) : null,
     };
 
     try {
@@ -645,7 +639,7 @@ export default function EventForm({
       onSubmit={submit}
       className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5"
     >
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-500 to-blue-600 px-6 py-8">
+      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-500 to-blue-600 px-5 py-6 sm:px-6 sm:py-8">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
         <div className="relative">
           <div className="inline-flex items-center justify-center rounded-xl bg-white/20 p-2.5 backdrop-blur-sm">
@@ -668,7 +662,7 @@ export default function EventForm({
         </div>
       </div>
 
-      <div className="space-y-5 p-6">
+      <div className="space-y-5 p-4 sm:p-6">
         <div>
           <label className="block text-sm font-semibold text-slate-900">
             Event Title <span className="text-red-500">*</span>
@@ -773,7 +767,7 @@ export default function EventForm({
             <label className="block text-sm font-semibold text-slate-900">
               Location
             </label>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
               <input
                 className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                 placeholder="Search location or type manually"
@@ -792,7 +786,7 @@ export default function EventForm({
                 type="button"
                 onClick={runSearchFromInput}
                 disabled={isSearchingLocation}
-                className="rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 sm:py-0"
               >
                 {isSearchingLocation ? "..." : "Search"}
               </button>
@@ -824,7 +818,7 @@ export default function EventForm({
         </div>
 
         <div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <label className="block text-sm font-semibold text-slate-900">
               Pick Location on Map
             </label>
@@ -832,7 +826,7 @@ export default function EventForm({
               type="button"
               onClick={useCurrentLocation}
               disabled={isDetectingLocation}
-              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-slate-900 px-3 py-2.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:py-1.5"
             >
               {isDetectingLocation ? "Detecting..." : "Use Current Location"}
             </button>
@@ -927,7 +921,7 @@ export default function EventForm({
             <button
               type="button"
               onClick={handleAddParticipant}
-              className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-500 focus:outline-none focus:ring-4 focus:ring-sky-500/20"
+              className="inline-flex w-full items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-500 focus:outline-none focus:ring-4 focus:ring-sky-500/20 sm:w-auto"
             >
               Add Participant
             </button>
@@ -940,22 +934,6 @@ export default function EventForm({
             {participantEmailError ||
               "Enter email addresses of participants to invite to this event. Only registered users can be added in this version."}
           </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-slate-900">
-            Capacity{" "}
-            <span className="font-normal text-slate-500">(Optional)</span>
-          </label>
-          <input
-            type="number"
-            className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-            placeholder="Max attendees"
-            value={form.capacity}
-            onChange={(event) =>
-              setForm((prev) => ({ ...prev, capacity: event.target.value }))
-            }
-          />
         </div>
 
         <button

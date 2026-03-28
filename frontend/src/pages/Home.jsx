@@ -12,16 +12,16 @@ import {
 
 function AdminHomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto flex w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
+      <div className="mx-auto flex w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <section className="w-full overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
-          <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-800 px-8 py-12 text-white">
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-800 px-5 py-8 text-white sm:px-8 sm:py-12">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.18),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.24),_transparent_45%)]"></div>
             <div className="relative max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">
                 FlashGather Admin
               </p>
-              <h1 className="mt-4 text-4xl font-black tracking-tight">
+              <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
                 Welcome to Admin Panel
               </h1>
               <p className="mt-4 text-sm leading-7 text-slate-200">
@@ -101,8 +101,8 @@ function MemberHomePage() {
     : "No upcoming events right now. Check History for earlier events you've joined.";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
@@ -152,7 +152,7 @@ function MemberHomePage() {
             toolbar={
               <button
                 onClick={fetchEvents}
-                className="group relative inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/30 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                className="group relative inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/30 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:w-auto"
               >
                 <svg
                   className="h-4 w-4 transition-transform group-hover:rotate-180"

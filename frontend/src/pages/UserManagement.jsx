@@ -154,17 +154,17 @@ export default function UserManagement() {
     : `${users.length} ${users.length === 1 ? "user" : "users"} in the system`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
-          <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-800 px-8 py-10 text-white">
+          <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-800 px-5 py-8 text-white sm:px-8 sm:py-10">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.18),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(59,130,246,0.24),_transparent_45%)]"></div>
             <div className="relative flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-2xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">
                   User Management
                 </p>
-                <h1 className="mt-4 text-4xl font-black tracking-tight">
+                <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
                   Review all FlashGather users
                 </h1>
                 <p className="mt-4 text-sm leading-7 text-slate-200">
@@ -198,7 +198,7 @@ export default function UserManagement() {
             </div>
           </div>
 
-          <div className="border-b border-slate-200 bg-slate-50 px-8 py-4">
+          <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-8">
             <p className="text-sm font-medium text-slate-600">{summary}</p>
           </div>
 

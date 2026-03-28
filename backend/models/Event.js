@@ -36,11 +36,6 @@ const EventSchema = new mongoose.Schema(
       max: 180,
       default: null
     },
-    capacity: {
-      type: Number,
-      min: 1,
-      default: null
-    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

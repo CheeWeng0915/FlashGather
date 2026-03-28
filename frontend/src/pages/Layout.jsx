@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   clearStoredUserSession,
   getStoredUserRole,
   hasStoredUserSession
-} from '../utils/auth';
+} from '../utils/auth'
 import {
   THEME_STORAGE_KEY,
   applyTheme,
   getPreferredTheme,
   persistTheme
-} from '../utils/theme';
-import logo from '../assets/logo.jpg';
-import { useToast } from '../components/ToastProvider';
+} from '../utils/theme'
+import logo from '../assets/logo.jpg'
+import { useToast } from '../components/ToastProvider'
 
 const menuItems = [
   { to: '/', label: 'Home', requiresAuth: true },
@@ -22,125 +22,167 @@ const menuItems = [
   { to: '/profile', label: 'Profile', requiresAuth: true },
   { to: '/login', label: 'Login', guestOnly: true },
   { to: '/register', label: 'Register', guestOnly: true }
-];
+]
 
 export default function Layout() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { showToast } = useToast();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
-  const [theme, setTheme] = useState(() => getPreferredTheme());
-  const [, setAuthRevision] = useState(0);
-  const isAuthenticated = hasStoredUserSession();
-  const userRole = isAuthenticated ? getStoredUserRole() : null;
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-  const isDarkTheme = theme === 'dark';
-  const themeStyles = getThemeStyles(isDarkTheme);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { showToast } = useToast()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth)
+  const [theme, setTheme] = useState(() => getPreferredTheme())
+  const [, setAuthRevision] = useState(0)
+  const isAuthenticated = hasStoredUserSession()
+  const userRole = isAuthenticated ? getStoredUserRole() : null
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register'
+  const isMobile = viewportWidth < 900
+  const isCompactHeader = viewportWidth < 560
+  const isVerySmallHeader = viewportWidth < 420
+  const isDarkTheme = theme === 'dark'
+  const themeStyles = getThemeStyles(isDarkTheme)
   const visibleMenuItems = menuItems.filter((item) => {
     if (item.requiresAuth) {
       if (!isAuthenticated) {
-        return false;
+        return false
       }
 
       if (item.requiresAdmin && userRole !== 'admin') {
-        return false;
+        return false
       }
 
       if (item.requiresMember && userRole !== 'member') {
-        return false;
+        return false
       }
 
-      return true;
+      return true
     }
 
     if (item.guestOnly) {
-      return !isAuthenticated;
+      return !isAuthenticated
     }
 
-    return true;
-  });
+    return true
+  })
+  const shouldShowNavigation = !isAuthPage && visibleMenuItems.length > 0
 
   useEffect(() => {
     const onResize = () => {
-      const mobile = window.innerWidth < 900;
-      setIsMobile(mobile);
-      if (!mobile) {
-        setIsSidebarOpen(false);
-      }
-    };
+      const nextWidth = window.innerWidth
+      const mobile = nextWidth < 900
+      setViewportWidth(nextWidth)
 
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+      if (!mobile) {
+        setIsSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   useEffect(() => {
-    applyTheme(theme);
-    persistTheme(theme);
-  }, [theme]);
+    setIsSidebarOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    applyTheme(theme)
+    persistTheme(theme)
+  }, [theme])
 
   useEffect(() => {
     const syncAuthState = () => {
-      setAuthRevision((value) => value + 1);
-    };
+      setAuthRevision((value) => value + 1)
+    }
 
     const handleStorage = (event) => {
-      syncAuthState();
+      syncAuthState()
 
       if (!event.key || event.key === THEME_STORAGE_KEY) {
-        setTheme(getPreferredTheme());
+        setTheme(getPreferredTheme())
       }
-    };
+    }
 
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
 
   const handleLogout = () => {
-    clearStoredUserSession();
-    setIsSidebarOpen(false);
+    clearStoredUserSession()
+    setIsSidebarOpen(false)
     showToast({
       type: 'success',
       title: 'Logged Out',
       message: 'You have been signed out successfully.'
-    });
-    navigate('/login', { replace: true });
-  };
+    })
+    navigate('/login', { replace: true })
+  }
 
   const toggleTheme = () => {
-    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
-  };
+    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
+  }
+
+  const brandLabel = isVerySmallHeader ? 'Flash' : 'Flash Gather'
+  const bodyLayoutStyles = shouldShowNavigation
+    ? isMobile
+      ? styles.bodyMobile
+      : styles.bodyDesktop
+    : styles.bodySingleColumn
 
   return (
     <div style={{ ...styles.shell, ...themeStyles.shell }}>
       <header style={{ ...styles.header, ...themeStyles.header }}>
-        <div style={styles.headerInner}>
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen((value) => !value)}
-            style={{
-              ...styles.menuButton,
-              ...themeStyles.menuButton,
-              ...(isMobile ? null : styles.menuButtonHidden)
-            }}
-            aria-label="Toggle sidebar"
-          >
-            ☰
-          </button>
+        <div
+          style={{
+            ...styles.headerInner,
+            ...(isCompactHeader ? styles.headerInnerCompact : null)
+          }}
+        >
+          {shouldShowNavigation ? (
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen((value) => !value)}
+              style={{
+                ...styles.menuButton,
+                ...themeStyles.menuButton,
+                ...(isMobile ? null : styles.menuButtonHidden)
+              }}
+              aria-label="Toggle sidebar"
+            >
+              <svg viewBox="0 0 24 24" fill="none" style={styles.menuButtonIcon} aria-hidden="true">
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          ) : null}
 
-          <Link to="/" style={{ ...styles.brand, ...themeStyles.brand }}>
+          <Link
+            to="/"
+            style={{
+              ...styles.brand,
+              ...themeStyles.brand,
+              ...(isCompactHeader ? styles.brandCompact : null)
+            }}
+          >
             <img
               src={logo}
               alt="Flash Gather Logo"
               style={{ ...styles.brandLogo, ...themeStyles.brandLogo }}
             />
-            Flash Gather
+            <span style={styles.brandText}>{brandLabel}</span>
           </Link>
 
           <button
             type="button"
             onClick={toggleTheme}
-            style={{ ...styles.themeToggle, ...themeStyles.themeToggle }}
+            style={{
+              ...styles.themeToggle,
+              ...themeStyles.themeToggle,
+              ...(isCompactHeader ? styles.themeToggleCompact : null)
+            }}
             aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} mode`}
             title={`Switch to ${isDarkTheme ? 'light' : 'dark'} mode`}
           >
@@ -167,13 +209,13 @@ export default function Layout() {
                 </svg>
               )}
             </span>
-            <span>{isDarkTheme ? 'Light' : 'Dark'}</span>
+            {!isCompactHeader ? <span>{isDarkTheme ? 'Light' : 'Dark'}</span> : null}
           </button>
         </div>
       </header>
 
-      <div style={{ ...styles.body, ...(isMobile ? styles.bodyMobile : styles.bodyDesktop) }}>
-        {isMobile && isSidebarOpen ? (
+      <div style={{ ...styles.body, ...bodyLayoutStyles }}>
+        {shouldShowNavigation && isMobile && isSidebarOpen ? (
           <button
             type="button"
             aria-label="Close sidebar overlay"
@@ -182,50 +224,58 @@ export default function Layout() {
           />
         ) : null}
 
-        <aside
+        {shouldShowNavigation ? (
+          <aside
+            style={{
+              ...styles.sidebar,
+              ...themeStyles.sidebar,
+              ...(isMobile ? styles.sidebarMobile : styles.sidebarDesktop),
+              ...(isMobile && isSidebarOpen ? styles.sidebarOpen : null),
+              ...(isMobile && !isSidebarOpen ? styles.sidebarClosed : null)
+            }}
+          >
+            <nav style={styles.menu}>
+              {visibleMenuItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setIsSidebarOpen(false)}
+                  style={({ isActive }) => ({
+                    ...styles.menuLink,
+                    ...themeStyles.menuLink,
+                    ...(isActive ? styles.menuLinkActive : null),
+                    ...(isActive ? themeStyles.menuLinkActive : null)
+                  })}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  style={{
+                    ...styles.menuLink,
+                    ...themeStyles.menuLink,
+                    ...styles.menuButtonAction,
+                    ...themeStyles.menuButtonAction
+                  }}
+                >
+                  Logout
+                </button>
+              ) : null}
+            </nav>
+          </aside>
+        ) : null}
+
+        <main
           style={{
-            ...styles.sidebar,
-            ...themeStyles.sidebar,
-            ...(isMobile ? styles.sidebarMobile : styles.sidebarDesktop),
-            ...(isMobile && isSidebarOpen ? styles.sidebarOpen : null),
-            ...(isMobile && !isSidebarOpen ? styles.sidebarClosed : null)
+            ...styles.main,
+            ...(isMobile ? styles.mainMobile : null),
+            ...(isAuthPage ? styles.mainAuth : null)
           }}
         >
-          <nav style={styles.menu}>
-            {visibleMenuItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setIsSidebarOpen(false)}
-                style={({ isActive }) => ({
-                  ...styles.menuLink,
-                  ...themeStyles.menuLink,
-                  ...(isActive ? styles.menuLinkActive : null),
-                  ...(isActive ? themeStyles.menuLinkActive : null)
-                })}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-
-            {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={handleLogout}
-                style={{
-                  ...styles.menuLink,
-                  ...themeStyles.menuLink,
-                  ...styles.menuButtonAction,
-                  ...themeStyles.menuButtonAction
-                }}
-              >
-                Logout
-              </button>
-            ) : null}
-          </nav>
-        </aside>
-
-        <main style={{ ...styles.main, ...(isAuthPage ? styles.mainAuth : null) }}>
           <Outlet />
         </main>
       </div>
@@ -234,7 +284,7 @@ export default function Layout() {
         <small>(c) {new Date().getFullYear()} FlashGather. All rights reserved.</small>
       </footer>
     </div>
-  );
+  )
 }
 
 const styles = {
@@ -256,12 +306,18 @@ const styles = {
   },
   headerInner: {
     maxWidth: '1160px',
+    width: '100%',
     height: '100%',
     margin: '0 auto',
     padding: '0 14px',
     display: 'flex',
     alignItems: 'center',
-    gap: '10px'
+    gap: '10px',
+    minWidth: 0
+  },
+  headerInnerCompact: {
+    padding: '0 10px',
+    gap: '8px'
   },
   menuButton: {
     border: '1px solid #cbd5e1',
@@ -275,6 +331,11 @@ const styles = {
     color: '#334155',
     cursor: 'pointer'
   },
+  menuButtonIcon: {
+    width: '18px',
+    height: '18px',
+    display: 'block'
+  },
   menuButtonHidden: {
     visibility: 'hidden',
     pointerEvents: 'none'
@@ -286,7 +347,17 @@ const styles = {
     fontSize: '1rem',
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '10px'
+    gap: '10px',
+    minWidth: 0,
+    flex: '1 1 auto'
+  },
+  brandCompact: {
+    gap: '8px'
+  },
+  brandText: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
   },
   brandLogo: {
     width: '36px',
@@ -307,7 +378,12 @@ const styles = {
     borderRadius: '999px',
     fontSize: '0.9rem',
     fontWeight: 700,
-    transition: 'transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease'
+    transition: 'transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease',
+    flex: '0 0 auto'
+  },
+  themeToggleCompact: {
+    minWidth: '38px',
+    padding: '0 10px'
   },
   themeToggleIcon: {
     display: 'inline-flex',
@@ -330,6 +406,9 @@ const styles = {
   },
   bodyMobile: {
     gridTemplateColumns: '1fr'
+  },
+  bodySingleColumn: {
+    gridTemplateColumns: 'minmax(0, 1fr)'
   },
   overlay: {
     position: 'fixed',
@@ -354,14 +433,16 @@ const styles = {
     position: 'fixed',
     top: '60px',
     left: 0,
-    width: '232px',
+    width: 'min(272px, calc(100vw - 24px))',
     height: 'calc(100dvh - 60px)'
   },
   sidebarOpen: {
     transform: 'translateX(0)'
   },
   sidebarClosed: {
-    transform: 'translateX(-100%)'
+    transform: 'translateX(-100%)',
+    visibility: 'hidden',
+    pointerEvents: 'none'
   },
   menu: {
     display: 'grid',
@@ -391,7 +472,12 @@ const styles = {
     padding: '14px',
     minWidth: 0,
     minHeight: 0,
-    overflowY: 'auto'
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    overscrollBehavior: 'contain'
+  },
+  mainMobile: {
+    padding: '12px'
   },
   mainAuth: {
     padding: 0
@@ -406,7 +492,7 @@ const styles = {
     padding: '0 14px',
     fontSize: '0.82rem'
   }
-};
+}
 
 const getThemeStyles = (isDarkTheme) =>
   isDarkTheme
@@ -507,4 +593,4 @@ const getThemeStyles = (isDarkTheme) =>
           backgroundColor: 'rgba(255, 255, 255, 0.94)',
           color: '#475569'
         }
-      };
+      }

@@ -134,7 +134,7 @@ export default function Register() {
       <div className="register-shell">
         <aside className="register-side">
           <div className="register-brand">
-            <img className="register-brand-mark" src={logo} alt="FlashGather logo" />
+            <img className="register-brand-mark" src={logo} alt="Flash Gather logo" />
             <span>FlashGather</span>
           </div>
 
@@ -236,9 +236,10 @@ export default function Register() {
                   type="button"
                   className="register-toggle"
                   onClick={() => setShowPassword((value) => !value)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                   disabled={isLoading}
                 >
-                  {showPassword ? '👁' : '⌣'}
+                  {showPassword ? 'Hide' : 'Show'}
                 </button>
               </label>
 

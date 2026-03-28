@@ -55,7 +55,7 @@ function ReadOnlyDetail({ eventItem, eyebrow = "Member View", notice = "" }) {
         ) : null}
       </div>
 
-      <div className="grid gap-5 p-6 sm:grid-cols-2">
+      <div className="grid gap-5 p-6 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Time
@@ -86,15 +86,6 @@ function ReadOnlyDetail({ eventItem, eyebrow = "Member View", notice = "" }) {
           </p>
           <p className="mt-3 text-lg font-semibold text-slate-900">
             {eventItem.participantCount || 0} joined
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Capacity
-          </p>
-          <p className="mt-3 text-lg font-semibold text-slate-900">
-            {eventItem.capacity || "No limit set"}
           </p>
         </div>
       </div>
@@ -162,9 +153,9 @@ export default function EventDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-center justify-between gap-4">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
+      <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p
               className={`text-xs font-semibold uppercase tracking-[0.2em] ${
@@ -173,13 +164,13 @@ export default function EventDetail() {
             >
               {isAdmin ? (isPast ? "Past Event" : "Event Detail") : "Joined Event"}
             </p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">
+            <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
               {isAdmin ? (isPast ? "Past Event Details" : "Edit Event") : "Event Details"}
             </h1>
           </div>
           <Link
             to={backPath}
-            className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+            className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 sm:w-auto"
           >
             {isAdmin ? "Back to Events" : `Back to ${isPast ? "History" : "Home"}`}
           </Link>
