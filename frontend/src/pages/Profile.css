@@ -135,7 +135,7 @@
 
 .profile-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
 
@@ -222,6 +222,12 @@
   display: grid;
   gap: 14px;
   margin: 22px 0 0;
+}
+
+.profile-info-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
 }
 
 .profile-detail-row {
@@ -341,6 +347,10 @@
   border: 1px solid #a7f3d0;
 }
 
+.profile-panel-actions {
+  margin-top: 22px;
+}
+
 .profile-submit {
   min-height: 48px;
   border-radius: 16px;
@@ -353,6 +363,15 @@
 .profile-submit:hover {
   border-color: transparent;
   background: linear-gradient(135deg, #115e59, #1e40af);
+}
+
+.profile-submit-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 .profile-submit:disabled,
