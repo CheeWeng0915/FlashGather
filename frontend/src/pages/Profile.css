@@ -224,12 +224,6 @@
   margin: 22px 0 0;
 }
 
-.profile-info-list {
-  display: grid;
-  gap: 14px;
-  margin-top: 22px;
-}
-
 .profile-detail-row {
   display: grid;
   gap: 6px;
