@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { API_BASE } from "../config";
 import {
   TOKEN_STORAGE_KEY,
+  clearStoredResetPasswordState,
   clearStoredUserSession,
   hasStoredUserSession,
   setStoredUser,
@@ -100,6 +101,7 @@ export default function Login() {
       localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
 
       setStoredUser(data.user);
+      clearStoredResetPasswordState();
 
       setSuccess("Login successful. Redirecting...");
       showToast({
@@ -216,6 +218,12 @@ export default function Login() {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </label>
+
+              <div className="login-links">
+                <Link to="/forgot-password" className="login-inline-link">
+                  Forgot password?
+                </Link>
+              </div>
 
               {error ? (
                 <p className="login-message login-error">{error}</p>

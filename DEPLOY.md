@@ -47,6 +47,13 @@ You will use this as `MONGO_URI` in Render.
 - `MONGO_URI` = your MongoDB Atlas connection string
 - `JWT_SECRET` = a long random secret string
 - `JWT_EXPIRES_IN` = session length such as `7d`
+- `SMTP_HOST` = your SMTP server host
+- `SMTP_PORT` = SMTP port such as `587`
+- `SMTP_SECURE` = `true` for SSL/TLS SMTP, otherwise `false`
+- `SMTP_USER` = SMTP username
+- `SMTP_PASS` = SMTP password or app password
+- `SMTP_FROM_EMAIL` = sender email address
+- `SMTP_FROM_NAME` = sender name shown in password reset emails
 
 6. Deploy.
 
@@ -123,6 +130,13 @@ If login or event creation fails, the most common causes are:
 - `MONGO_URI`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_SECURE`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `SMTP_FROM_EMAIL`
+- `SMTP_FROM_NAME`
 
 ### Frontend on Vercel
 

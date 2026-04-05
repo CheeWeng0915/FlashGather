@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import ChangePassword from "./pages/ChangePassword";
 import EventDetail from "./pages/EventDetail";
 import Events from "./pages/Events";
+import ForgotPassword from "./pages/ForgotPassword";
 import History from "./pages/History";
 import Home from "./pages/Home";
 import Layout from "./pages/Layout";
@@ -9,6 +11,7 @@ import MyEvents from "./pages/MyEvents";
 import NewEvent from "./pages/NewEvent";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
+import ResetPassword from "./pages/ResetPassword";
 import UserManagement from "./pages/UserManagement";
 import { getStoredUserRole, hasStoredUserSession } from "./utils/auth";
 
@@ -112,7 +115,17 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/change-password"
+          element={
+            <RequireAuth>
+              <ChangePassword />
+            </RequireAuth>
+          }
+        />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/register" element={<Register />} />
       </Route>
     </Routes>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
+  clearStoredResetPasswordState,
   clearStoredUserSession,
   getStoredUserRole,
   hasStoredUserSession
@@ -20,9 +21,13 @@ const menuItems = [
   { to: '/my-events', label: 'My Events', requiresAuth: true, requiresMember: true },
   { to: '/users', label: 'Users', requiresAuth: true, requiresAdmin: true },
   { to: '/history', label: 'History', requiresAuth: true, requiresMember: true },
-  { to: '/profile', label: 'Profile', requiresAuth: true },
   { to: '/login', label: 'Login', guestOnly: true },
   { to: '/register', label: 'Register', guestOnly: true }
+]
+
+const accountMenuItems = [
+  { to: '/profile', label: 'Profile' },
+  { to: '/change-password', label: 'Change Password' }
 ]
 
 export default function Layout() {
@@ -32,10 +37,17 @@ export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth)
   const [theme, setTheme] = useState(() => getPreferredTheme())
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(() =>
+    accountMenuItems.some((item) => item.to === window.location.pathname)
+  )
   const [, setAuthRevision] = useState(0)
   const isAuthenticated = hasStoredUserSession()
   const userRole = isAuthenticated ? getStoredUserRole() : null
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register'
+  const isAuthPage =
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/reset-password'
   const isMobile = viewportWidth < 900
   const isCompactHeader = viewportWidth < 560
   const isVerySmallHeader = viewportWidth < 420
@@ -64,7 +76,16 @@ export default function Layout() {
 
     return true
   })
+  const isAccountSectionActive =
+    isAuthenticated &&
+    accountMenuItems.some((item) => item.to === location.pathname)
   const shouldShowNavigation = !isAuthPage && visibleMenuItems.length > 0
+
+  useEffect(() => {
+    if (isAccountSectionActive) {
+      setIsAccountMenuOpen(true)
+    }
+  }, [isAccountSectionActive])
 
   useEffect(() => {
     const onResize = () => {
@@ -105,6 +126,7 @@ export default function Layout() {
 
   const handleLogout = () => {
     clearStoredUserSession()
+    clearStoredResetPasswordState()
     setIsSidebarOpen(false)
     showToast({
       type: 'success',
@@ -249,18 +271,75 @@ export default function Layout() {
               ))}
 
               {isAuthenticated ? (
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  style={{
-                    ...styles.menuLink,
-                    ...themeStyles.menuLink,
-                    ...styles.menuButtonAction,
-                    ...themeStyles.menuButtonAction
-                  }}
-                >
-                  Logout
-                </button>
+                <div style={styles.accountMenu}>
+                  <button
+                    type="button"
+                    onClick={() => setIsAccountMenuOpen((value) => !value)}
+                    style={{
+                      ...styles.menuLink,
+                      ...styles.accountMenuButton,
+                      ...themeStyles.menuLink,
+                      ...(isAccountSectionActive ? styles.menuLinkActive : null),
+                      ...(isAccountSectionActive ? themeStyles.menuLinkActive : null)
+                    }}
+                    aria-expanded={isAccountMenuOpen}
+                    aria-controls="account-submenu"
+                  >
+                    <span style={styles.accountMenuLabel}>Account</span>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                      style={{
+                        ...styles.accountChevron,
+                        ...(isAccountMenuOpen ? styles.accountChevronOpen : null)
+                      }}
+                    >
+                      <path
+                        d="M7 10l5 5 5-5"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+
+                  {isAccountMenuOpen ? (
+                    <div id="account-submenu" style={styles.accountSubmenu}>
+                      {accountMenuItems.map((item) => (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          onClick={() => setIsSidebarOpen(false)}
+                          style={({ isActive }) => ({
+                            ...styles.menuLink,
+                            ...styles.accountSubmenuItem,
+                            ...themeStyles.menuLink,
+                            ...(isActive ? styles.menuLinkActive : null),
+                            ...(isActive ? themeStyles.menuLinkActive : null)
+                          })}
+                        >
+                          {item.label}
+                        </NavLink>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        style={{
+                          ...styles.menuLink,
+                          ...styles.accountSubmenuItem,
+                          ...themeStyles.menuLink,
+                          ...styles.menuButtonAction,
+                          ...themeStyles.menuButtonAction
+                        }}
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               ) : null}
             </nav>
           </aside>
@@ -445,6 +524,10 @@ const styles = {
     display: 'grid',
     gap: '8px'
   },
+  accountMenu: {
+    display: 'grid',
+    gap: '8px'
+  },
   menuLink: {
     textDecoration: 'none',
     color: '#334155',
@@ -452,6 +535,37 @@ const styles = {
     borderRadius: '8px',
     fontWeight: 600,
     fontSize: '0.92rem'
+  },
+  accountMenuButton: {
+    width: '100%',
+    border: 0,
+    background: 'transparent',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '10px',
+    textAlign: 'left'
+  },
+  accountMenuLabel: {
+    minWidth: 0
+  },
+  accountChevron: {
+    width: '16px',
+    height: '16px',
+    flex: '0 0 auto',
+    transition: 'transform 0.18s ease'
+  },
+  accountChevronOpen: {
+    transform: 'rotate(180deg)'
+  },
+  accountSubmenu: {
+    display: 'grid',
+    gap: '8px',
+    paddingLeft: '12px'
+  },
+  accountSubmenuItem: {
+    fontSize: '0.9rem'
   },
   menuButtonAction: {
     border: 0,

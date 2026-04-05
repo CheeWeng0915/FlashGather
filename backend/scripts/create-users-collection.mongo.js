@@ -36,6 +36,22 @@ if (!existing.includes(collectionName)) {
             maxLength: 200,
             description: 'Password hash is required'
           },
+          passwordResetOtpHash: {
+            bsonType: ['string', 'null'],
+            description: 'Password reset OTP hash when a reset is active'
+          },
+          passwordResetOtpExpiresAt: {
+            bsonType: ['date', 'null'],
+            description: 'Password reset OTP expiry time'
+          },
+          passwordResetLastSentAt: {
+            bsonType: ['date', 'null'],
+            description: 'Last time a password reset OTP email was sent'
+          },
+          tokenVersion: {
+            bsonType: ['int', 'long', 'double', 'null'],
+            description: 'Token version increments when sessions must be revoked'
+          },
           role: {
             bsonType: 'string',
             enum: ['admin', 'member'],

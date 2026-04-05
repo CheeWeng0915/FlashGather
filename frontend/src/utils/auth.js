@@ -1,5 +1,7 @@
 export const TOKEN_STORAGE_KEY = "token";
 export const USER_STORAGE_KEY = "currentUser";
+export const RESET_PASSWORD_TOKEN_STORAGE_KEY = "resetPasswordToken";
+export const RESET_PASSWORD_EMAIL_STORAGE_KEY = "resetPasswordEmail";
 
 const decodeTokenPayload = (token) => {
   if (!token) {
@@ -33,6 +35,8 @@ export const isTokenExpired = (token) => {
 };
 
 const getRawStoredToken = () => localStorage.getItem(TOKEN_STORAGE_KEY);
+const getRawStoredResetPasswordToken = () =>
+  sessionStorage.getItem(RESET_PASSWORD_TOKEN_STORAGE_KEY);
 
 export const getStoredToken = () => {
   const token = getRawStoredToken();
@@ -94,6 +98,41 @@ export const hasStoredUserSession = () => {
 export const clearStoredUserSession = () => {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
   localStorage.removeItem(USER_STORAGE_KEY);
+};
+
+export const setStoredResetPasswordState = ({ token, email }) => {
+  if (!token || !email) {
+    clearStoredResetPasswordState();
+    return;
+  }
+
+  sessionStorage.setItem(RESET_PASSWORD_TOKEN_STORAGE_KEY, token);
+  sessionStorage.setItem(RESET_PASSWORD_EMAIL_STORAGE_KEY, email);
+};
+
+export const clearStoredResetPasswordState = () => {
+  sessionStorage.removeItem(RESET_PASSWORD_TOKEN_STORAGE_KEY);
+  sessionStorage.removeItem(RESET_PASSWORD_EMAIL_STORAGE_KEY);
+};
+
+export const getStoredResetPasswordToken = () => {
+  const token = getRawStoredResetPasswordToken();
+
+  if (!token) {
+    return null;
+  }
+
+  if (isTokenExpired(token)) {
+    clearStoredResetPasswordState();
+    return null;
+  }
+
+  return token;
+};
+
+export const getStoredResetPasswordEmail = () => {
+  const email = sessionStorage.getItem(RESET_PASSWORD_EMAIL_STORAGE_KEY);
+  return email ? email.trim().toLowerCase() : null;
 };
 
 export const getAuthHeaders = (headers = {}) => {
