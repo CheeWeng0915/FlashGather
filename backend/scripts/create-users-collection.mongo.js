@@ -49,7 +49,7 @@ if (!existing.includes(collectionName)) {
             description: 'Last time a password reset OTP email was sent'
           },
           tokenVersion: {
-            bsonType: ['int', 'long', 'null'],
+            bsonType: ['int', 'long', 'double', 'null'],
             description: 'Token version increments when sessions must be revoked'
           },
           role: {
