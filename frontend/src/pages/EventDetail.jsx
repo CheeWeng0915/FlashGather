@@ -9,6 +9,7 @@ import {
   formatDisplayDateRange,
   formatDisplayTime,
 } from "../utils/dateDisplay";
+import { useToast } from "../components/toastContext";
 import { isPastEvent } from "../utils/events";
 
 const readApiError = async (response, fallbackMessage) => {
@@ -321,11 +322,13 @@ function ItinerarySection({
 export default function EventDetail() {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const currentUser = getStoredUser();
   const [eventItem, setEventItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
+  const [isLeavingEvent, setIsLeavingEvent] = useState(false);
   const userRole = getStoredUserRole();
   const isAdmin = userRole === "admin";
 
@@ -442,6 +445,8 @@ export default function EventDetail() {
     ? Boolean(eventItem.isLocked || isPastEvent(eventItem))
     : false;
   const canEditEvent = Boolean(eventItem?.permissions?.canEditEvent) && !isLocked;
+  const canLeaveEvent =
+    !isLocked && !canEditEvent && !isAdmin && !isLoading && !loadError && Boolean(eventItem);
   const backPath = isAdmin
     ? "/events"
     : eventItem?.permissions?.canEditEvent
@@ -457,6 +462,45 @@ export default function EventDetail() {
   const notice = isLocked
     ? "Past events are locked and can no longer be edited."
     : "";
+
+  const leaveEvent = async () => {
+    if (!eventItem || isLeavingEvent) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Leave event "${eventItem.title}"?`);
+    if (!confirmed) {
+      return;
+    }
+
+    setIsLeavingEvent(true);
+
+    try {
+      const response = await fetch(`${API_BASE}/events/${eventId}/join`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        await readApiError(response, "Unable to leave this event.");
+      }
+
+      showToast({
+        type: "success",
+        title: "Left event",
+        message: `You left "${eventItem.title}".`,
+      });
+      navigate("/", { replace: true });
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Leave failed",
+        message: error.message || "Unable to leave this event.",
+      });
+    } finally {
+      setIsLeavingEvent(false);
+    }
+  };
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
@@ -474,12 +518,24 @@ export default function EventDetail() {
               {canEditEvent ? "Manage Event" : "Event Details"}
             </h1>
           </div>
-          <Link
-            to={backPath}
-            className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 sm:w-auto"
-          >
-            {backLabel}
-          </Link>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            {canLeaveEvent ? (
+              <button
+                type="button"
+                onClick={leaveEvent}
+                disabled={isLeavingEvent}
+                className="inline-flex w-full items-center justify-center rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              >
+                {isLeavingEvent ? "Leaving..." : "Leave Event"}
+              </button>
+            ) : null}
+            <Link
+              to={backPath}
+              className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 sm:w-auto"
+            >
+              {backLabel}
+            </Link>
+          </div>
         </div>
 
         {isLoading ? (

@@ -3,9 +3,11 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import {
   clearStoredResetPasswordState,
   clearStoredUserSession,
+  getAuthHeaders,
   getStoredUserRole,
   hasStoredUserSession
 } from '../utils/auth'
+import { API_BASE } from '../config'
 import {
   THEME_STORAGE_KEY,
   applyTheme,
@@ -21,6 +23,7 @@ const menuItems = [
   { to: '/my-events', label: 'My Events', requiresAuth: true, requiresMember: true },
   { to: '/users', label: 'Users', requiresAuth: true, requiresAdmin: true },
   { to: '/history', label: 'History', requiresAuth: true, requiresMember: true },
+  { to: '/notifications', label: 'Notifications', requiresAuth: true },
   { to: '/login', label: 'Login', guestOnly: true },
   { to: '/register', label: 'Register', guestOnly: true }
 ]
@@ -40,6 +43,7 @@ export default function Layout() {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(() =>
     accountMenuItems.some((item) => item.to === window.location.pathname)
   )
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
   const [, setAuthRevision] = useState(0)
   const isAuthenticated = hasStoredUserSession()
   const userRole = isAuthenticated ? getStoredUserRole() : null
@@ -79,13 +83,8 @@ export default function Layout() {
   const isAccountSectionActive =
     isAuthenticated &&
     accountMenuItems.some((item) => item.to === location.pathname)
+  const shouldShowAccountSubmenu = isAccountMenuOpen || isAccountSectionActive
   const shouldShowNavigation = !isAuthPage && visibleMenuItems.length > 0
-
-  useEffect(() => {
-    if (isAccountSectionActive) {
-      setIsAccountMenuOpen(true)
-    }
-  }, [isAccountSectionActive])
 
   useEffect(() => {
     const onResize = () => {
@@ -123,6 +122,48 @@ export default function Layout() {
     window.addEventListener('storage', handleStorage)
     return () => window.removeEventListener('storage', handleStorage)
   }, [])
+
+  useEffect(() => {
+    let isActive = true
+
+    const loadUnreadCount = async () => {
+      if (!isAuthenticated) {
+        if (isActive) {
+          setUnreadNotificationCount(0)
+        }
+        return
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/notifications/unread-count`, {
+          headers: getAuthHeaders()
+        })
+        if (!response.ok) {
+          return
+        }
+
+        const data = await response.json()
+        if (!isActive) {
+          return
+        }
+
+        const unreadCount = Number.parseInt(String(data?.unreadCount || 0), 10)
+        setUnreadNotificationCount(Number.isFinite(unreadCount) && unreadCount > 0 ? unreadCount : 0)
+      } catch {
+        if (isActive) {
+          setUnreadNotificationCount(0)
+        }
+      }
+    }
+
+    loadUnreadCount()
+    const intervalId = window.setInterval(loadUnreadCount, 30000)
+
+    return () => {
+      isActive = false
+      window.clearInterval(intervalId)
+    }
+  }, [isAuthenticated, location.pathname])
 
   const handleLogout = () => {
     clearStoredUserSession()
@@ -266,7 +307,14 @@ export default function Layout() {
                     ...(isActive ? themeStyles.menuLinkActive : null)
                   })}
                 >
-                  {item.label}
+                  <span style={styles.menuLinkContent}>
+                    <span>{item.label}</span>
+                    {item.to === '/notifications' && unreadNotificationCount > 0 ? (
+                      <span style={styles.notificationBadge}>
+                        {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                      </span>
+                    ) : null}
+                  </span>
                 </NavLink>
               ))}
 
@@ -282,7 +330,7 @@ export default function Layout() {
                       ...(isAccountSectionActive ? styles.menuLinkActive : null),
                       ...(isAccountSectionActive ? themeStyles.menuLinkActive : null)
                     }}
-                    aria-expanded={isAccountMenuOpen}
+                    aria-expanded={shouldShowAccountSubmenu}
                     aria-controls="account-submenu"
                   >
                     <span style={styles.accountMenuLabel}>Account</span>
@@ -290,10 +338,10 @@ export default function Layout() {
                       viewBox="0 0 24 24"
                       fill="none"
                       aria-hidden="true"
-                      style={{
-                        ...styles.accountChevron,
-                        ...(isAccountMenuOpen ? styles.accountChevronOpen : null)
-                      }}
+                        style={{
+                          ...styles.accountChevron,
+                          ...(shouldShowAccountSubmenu ? styles.accountChevronOpen : null)
+                        }}
                     >
                       <path
                         d="M7 10l5 5 5-5"
@@ -305,7 +353,7 @@ export default function Layout() {
                     </svg>
                   </button>
 
-                  {isAccountMenuOpen ? (
+                  {shouldShowAccountSubmenu ? (
                     <div id="account-submenu" style={styles.accountSubmenu}>
                       {accountMenuItems.map((item) => (
                         <NavLink
@@ -535,6 +583,26 @@ const styles = {
     borderRadius: '8px',
     fontWeight: 600,
     fontSize: '0.92rem'
+  },
+  menuLinkContent: {
+    display: 'inline-flex',
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '8px'
+  },
+  notificationBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '22px',
+    padding: '0 6px',
+    height: '22px',
+    borderRadius: '999px',
+    fontSize: '0.72rem',
+    fontWeight: 700,
+    color: '#ffffff',
+    backgroundColor: '#2563eb'
   },
   accountMenuButton: {
     width: '100%',

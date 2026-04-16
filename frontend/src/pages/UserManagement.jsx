@@ -5,6 +5,7 @@ import { useToast } from "../components/toastContext";
 import {
   clearStoredUserSession,
   getAuthHeaders,
+  getStoredUser,
 } from "../utils/auth";
 import { formatDisplayDate } from "../utils/dateDisplay";
 import { fetchWithTimeout, isAbortError } from "../utils/http";
@@ -15,6 +16,10 @@ const SESSION_ERROR_MESSAGES = new Set([
 ]);
 
 const getErrorMessage = (payload, fallbackMessage) => {
+  if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+    return payload.errors[0]?.msg || fallbackMessage;
+  }
+
   if (typeof payload?.error === "string" && payload.error.trim()) {
     return payload.error;
   }
@@ -63,6 +68,8 @@ export default function UserManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [refreshRevision, setRefreshRevision] = useState(0);
+  const [updatingUserId, setUpdatingUserId] = useState("");
+  const currentUserId = getStoredUser()?.id || "";
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -147,6 +154,48 @@ export default function UserManagement() {
   const handleRefresh = () => {
     setSearchTerm(searchInput.trim());
     setRefreshRevision((value) => value + 1);
+  };
+
+  const handleToggleRole = async (user) => {
+    if (!user?.id || user.id === currentUserId || updatingUserId) {
+      return;
+    }
+
+    const nextRole = user.role === "admin" ? "member" : "admin";
+    setUpdatingUserId(user.id);
+
+    try {
+      const response = await fetchWithTimeout(`${API_BASE}/users/${user.id}/role`, {
+        method: "PATCH",
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ role: nextRole }),
+      });
+      const data = await readJson(response);
+
+      if (!response.ok) {
+        throw new Error(getErrorMessage(data, "Unable to update user role."));
+      }
+
+      setUsers((currentUsers) =>
+        currentUsers.map((item) =>
+          item.id === user.id ? { ...item, role: data?.role || nextRole } : item,
+        ),
+      );
+
+      showToast({
+        type: "success",
+        title: "Role updated",
+        message: `${user.username} is now ${nextRole}.`,
+      });
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Role update failed",
+        message: error.message || "Unable to update user role.",
+      });
+    } finally {
+      setUpdatingUserId("");
+    }
   };
 
   const summary = searchTerm
@@ -311,6 +360,27 @@ export default function UserManagement() {
                             {formatDate(user.updatedAt)}
                           </dd>
                         </div>
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-slate-500">Actions</dt>
+                          <dd className="text-right">
+                            {user.id === currentUserId ? (
+                              <span className="text-xs font-semibold text-slate-500">
+                                Current account
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleToggleRole(user)}
+                                disabled={updatingUserId === user.id}
+                                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {updatingUserId === user.id
+                                  ? "Updating..."
+                                  : `Set as ${user.role === "admin" ? "Member" : "Admin"}`}
+                              </button>
+                            )}
+                          </dd>
+                        </div>
                       </dl>
                     </article>
                   ))}
@@ -326,6 +396,7 @@ export default function UserManagement() {
                         <th className="px-5 py-4">User ID</th>
                         <th className="px-5 py-4">Member Since</th>
                         <th className="px-5 py-4">Last Updated</th>
+                        <th className="px-5 py-4">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -350,6 +421,24 @@ export default function UserManagement() {
                           </td>
                           <td className="px-5 py-4">{formatDate(user.createdAt)}</td>
                           <td className="px-5 py-4">{formatDate(user.updatedAt)}</td>
+                          <td className="px-5 py-4">
+                            {user.id === currentUserId ? (
+                              <span className="text-xs font-semibold text-slate-500">
+                                Current account
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleToggleRole(user)}
+                                disabled={updatingUserId === user.id}
+                                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {updatingUserId === user.id
+                                  ? "Updating..."
+                                  : `Set as ${user.role === "admin" ? "Member" : "Admin"}`}
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
