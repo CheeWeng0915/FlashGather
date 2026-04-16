@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Event = require('../models/Event');
 const EventParticipant = require('../models/EventParticipant');
 const ItineraryItem = require('../models/ItineraryItem');
+const Notification = require('../models/Notification');
 const User = require('../models/User');
 const requireDatabase = require('../middleware/requireDatabase');
 const requireAuth = require('../middleware/auth');
@@ -175,6 +176,80 @@ const isPastEvent = (eventDoc) => {
 
   return endDate < getTodayDateString();
 };
+
+const compareAscendingDate = (left, right) => {
+  if (!left && !right) {
+    return 0;
+  }
+
+  if (!left) {
+    return 1;
+  }
+
+  if (!right) {
+    return -1;
+  }
+
+  return left.localeCompare(right);
+};
+
+const getDaysFromToday = (dateValue) => {
+  if (!dateValue) {
+    return null;
+  }
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const parsed = new Date(`${dateValue}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return Math.floor((parsed.getTime() - startOfToday.getTime()) / (24 * 60 * 60 * 1000));
+};
+
+const getRecommendationScore = (eventDoc) => {
+  const eventStartDate = getEventStartDate(eventDoc);
+  const daysFromToday = getDaysFromToday(eventStartDate);
+  const participantCount = Number(eventDoc?.participantCount) || 0;
+  let score = participantCount;
+
+  if (daysFromToday === null) {
+    score += 6;
+  } else if (daysFromToday < 0) {
+    score -= 1000;
+  } else {
+    score += Math.max(0, 45 - daysFromToday);
+    if (daysFromToday <= 7) {
+      score += 12;
+    }
+  }
+
+  return score;
+};
+
+const sortRecommendedEvents = (events) =>
+  [...events].sort((left, right) => {
+    const scoreComparison = getRecommendationScore(right) - getRecommendationScore(left);
+    if (scoreComparison !== 0) {
+      return scoreComparison;
+    }
+
+    const startDateComparison = compareAscendingDate(
+      getEventStartDate(left),
+      getEventStartDate(right)
+    );
+    if (startDateComparison !== 0) {
+      return startDateComparison;
+    }
+
+    return String(left?.title || '').localeCompare(String(right?.title || ''));
+  });
+
+const ALREADY_JOINED_ERROR = 'You have already joined this event.';
+const ADMIN_JOIN_FORBIDDEN_ERROR = 'Admins cannot join events.';
+const NOT_JOINED_ERROR = 'You have not joined this event.';
+const OWNER_LEAVE_FORBIDDEN_ERROR = 'Event owners cannot leave their own events.';
 
 const normalizeParticipantEmails = (input) => {
   if (!Array.isArray(input)) {
@@ -419,6 +494,37 @@ const replaceEventParticipants = async (eventId, users, addedBy) => {
 const buildParticipantEmailError = (missingEmails) =>
   `These participant emails are not registered: ${missingEmails.join(', ')}`;
 
+const getParticipantUserIds = async (eventId) => {
+  const rows = await EventParticipant.find({ eventId }).select('userId').lean();
+  return Array.from(
+    new Set(rows.map((row) => String(row.userId)).filter(Boolean))
+  );
+};
+
+const createEventNotifications = async ({
+  userIds,
+  eventId,
+  type,
+  title,
+  message
+}) => {
+  const uniqueUserIds = Array.from(new Set((userIds || []).map(String))).filter(Boolean);
+
+  if (uniqueUserIds.length === 0) {
+    return;
+  }
+
+  await Notification.insertMany(
+    uniqueUserIds.map((userId) => ({
+      userId,
+      eventId,
+      type,
+      title,
+      message
+    }))
+  );
+};
+
 const ensureOwnerIncluded = (participantEmails, ownerEmail) => {
   const normalizedOwnerEmail = String(ownerEmail || '').trim().toLowerCase();
   const emails = normalizeParticipantEmails(participantEmails);
@@ -613,6 +719,27 @@ router.get('/', listValidators, async (req, res) => {
   }
 });
 
+router.get('/recommended', async (req, res) => {
+  if (isAdminUser(req)) {
+    return res.json([]);
+  }
+
+  try {
+    const relationships = await EventParticipant.find({ userId: req.user.id }).select('eventId');
+    const joinedEventIds = relationships.map((item) => item.eventId);
+    const events = await Event.find({
+      _id: { $nin: joinedEventIds },
+      userId: { $ne: req.user.id }
+    }).sort({ startDate: 1, endDate: 1, createdAt: -1 });
+
+    const upcomingEvents = events.filter((eventDoc) => !isPastEvent(eventDoc));
+    const decorated = await decorateEvents(upcomingEvents);
+    return res.json(sortRecommendedEvents(decorated));
+  } catch (error) {
+    return handleRouteError(error, res);
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const eventDoc = await findEventOrThrow(req.params.id);
@@ -707,6 +834,7 @@ router.put('/:id', eventValidators, async (req, res) => {
     }
 
     assertUnlockedEvent(existing);
+    const previousParticipantUserIds = await getParticipantUserIds(existing._id);
 
     const payload = normalizeEventPayload(req.body);
     const nextStartDate = payload.startDate || getEventStartDate(existing);
@@ -742,6 +870,18 @@ router.put('/:id', eventValidators, async (req, res) => {
     const updated = await existing.save();
 
     await replaceEventParticipants(updated._id, participantResolution.users, req.user.id);
+    const nextParticipantUserIds = participantResolution.users.map((userDoc) => String(userDoc._id));
+    const notificationUserIds = Array.from(
+      new Set([...previousParticipantUserIds, ...nextParticipantUserIds])
+    ).filter((userId) => userId !== String(req.user.id));
+
+    await createEventNotifications({
+      userIds: notificationUserIds,
+      eventId: updated._id,
+      type: 'event-updated',
+      title: 'Event updated',
+      message: `"${updated.title}" has been updated. Open the event to review the latest details.`
+    });
 
     const itineraryItems = await ItineraryItem.find({ eventId: updated._id })
       .populate('createdBy', 'username email role')
@@ -765,6 +905,73 @@ router.put('/:id', eventValidators, async (req, res) => {
   }
 });
 
+router.post('/:id/join', async (req, res) => {
+  if (isAdminUser(req)) {
+    return res.status(403).json({ error: ADMIN_JOIN_FORBIDDEN_ERROR });
+  }
+
+  try {
+    const eventDoc = await findEventOrThrow(req.params.id);
+    assertUnlockedEvent(eventDoc);
+
+    const existingParticipant = await EventParticipant.exists({
+      eventId: eventDoc._id,
+      userId: req.user.id
+    });
+    if (existingParticipant) {
+      return res.status(409).json({ error: ALREADY_JOINED_ERROR });
+    }
+
+    await EventParticipant.create({
+      eventId: eventDoc._id,
+      userId: req.user.id,
+      addedBy: req.user.id
+    });
+
+    const participantCount = await EventParticipant.countDocuments({ eventId: eventDoc._id });
+    return res.status(201).json({
+      message: 'Joined event successfully.',
+      participantCount
+    });
+  } catch (error) {
+    return handleRouteError(error, res);
+  }
+});
+
+router.delete('/:id/join', async (req, res) => {
+  if (isAdminUser(req)) {
+    return res.status(403).json({ error: ADMIN_JOIN_FORBIDDEN_ERROR });
+  }
+
+  try {
+    const eventDoc = await findEventOrThrow(req.params.id);
+    assertUnlockedEvent(eventDoc);
+
+    if (userOwnsEvent(req.user.id, eventDoc)) {
+      return res.status(400).json({ error: OWNER_LEAVE_FORBIDDEN_ERROR });
+    }
+
+    const relationship = await EventParticipant.findOne({
+      eventId: eventDoc._id,
+      userId: req.user.id
+    });
+
+    if (!relationship) {
+      return res.status(404).json({ error: NOT_JOINED_ERROR });
+    }
+
+    await relationship.deleteOne();
+
+    const participantCount = await EventParticipant.countDocuments({ eventId: eventDoc._id });
+    return res.json({
+      message: 'Left event successfully.',
+      participantCount
+    });
+  } catch (error) {
+    return handleRouteError(error, res);
+  }
+});
+
 router.delete('/:id', async (req, res) => {
   try {
     const existing = await findEventOrThrow(req.params.id);
@@ -773,6 +980,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     assertUnlockedEvent(existing);
+    const participantUserIds = await getParticipantUserIds(existing._id);
 
     await Promise.all([
       EventParticipant.deleteMany({ eventId: existing._id }),
@@ -780,6 +988,14 @@ router.delete('/:id', async (req, res) => {
     ]);
 
     await existing.deleteOne();
+    await createEventNotifications({
+      userIds: participantUserIds.filter((userId) => userId !== String(req.user.id)),
+      eventId: existing._id,
+      type: 'event-cancelled',
+      title: 'Event cancelled',
+      message: `"${existing.title}" has been cancelled by the organizer.`
+    });
+
     return res.json({ message: 'Event deleted' });
   } catch (error) {
     return handleRouteError(error, res);

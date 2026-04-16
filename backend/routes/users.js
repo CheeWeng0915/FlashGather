@@ -1,4 +1,6 @@
 const express = require('express');
+const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const requireDatabase = require('../middleware/requireDatabase');
 const requireAuth = require('../middleware/auth');
@@ -24,6 +26,22 @@ const formatUserResponse = (user) => ({
 });
 
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const roleValidators = [
+  body('role')
+    .trim()
+    .isIn(['admin', 'member'])
+    .withMessage('Role must be admin or member')
+];
+
+const sendValidationErrors = (req, res) => {
+  const errors = validationResult(req);
+  if (errors.isEmpty()) {
+    return false;
+  }
+
+  res.status(400).json({ errors: errors.array() });
+  return true;
+};
 
 router.get('/', async (req, res) => {
   const rawSearch = typeof req.query.search === 'string' ? req.query.search : '';
@@ -46,6 +64,34 @@ router.get('/', async (req, res) => {
       .lean();
 
     return res.json(users.map(formatUserResponse));
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+router.patch('/:id/role', roleValidators, async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid user id' });
+  }
+
+  if (sendValidationErrors(req, res)) {
+    return;
+  }
+
+  if (String(req.currentUser._id) === String(req.params.id)) {
+    return res.status(400).json({ error: 'You cannot change your own role.' });
+  }
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.role = req.body.role === 'admin' ? 'admin' : 'member';
+    await user.save();
+
+    return res.json(formatUserResponse(user));
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

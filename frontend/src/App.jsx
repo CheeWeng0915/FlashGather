@@ -9,6 +9,7 @@ import Layout from "./pages/Layout";
 import Login from "./pages/Login";
 import MyEvents from "./pages/MyEvents";
 import NewEvent from "./pages/NewEvent";
+import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
@@ -81,6 +82,14 @@ export default function App() {
             <RequireMember>
               <History />
             </RequireMember>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <RequireAuth>
+              <Notifications />
+            </RequireAuth>
           }
         />
         <Route

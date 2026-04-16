@@ -10,6 +10,8 @@ export default function EventListPanel({
   toolbar = null,
   onOpen,
   onDelete,
+  onLeave,
+  leavingEventId = "",
   showManageActions = false,
 }) {
   return (
@@ -54,6 +56,9 @@ export default function EventListPanel({
           const isLockedPastEvent = showManageActions && isPastEvent(eventItem);
           const { startDate, endDate } = getEventDateRange(eventItem);
           const ownerLabel = eventItem.owner?.username || "Unknown owner";
+          const canLeaveEvent =
+            typeof onLeave === "function" && !showManageActions && !isPastEvent(eventItem);
+          const currentEventId = eventItem.id || eventItem._id;
 
           return (
             <li
@@ -174,13 +179,25 @@ export default function EventListPanel({
                     </>
                   )
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => onOpen(eventItem)}
-                    className="w-full rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-700"
-                  >
-                    View Details
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => onOpen(eventItem)}
+                      className={`${canLeaveEvent ? "flex-1" : "w-full"} rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-700`}
+                    >
+                      View Details
+                    </button>
+                    {canLeaveEvent ? (
+                      <button
+                        type="button"
+                        onClick={() => onLeave(eventItem)}
+                        disabled={leavingEventId === currentEventId}
+                        className="flex-1 rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {leavingEventId === currentEventId ? "Leaving..." : "Leave"}
+                      </button>
+                    ) : null}
+                  </>
                 )}
               </div>
 
