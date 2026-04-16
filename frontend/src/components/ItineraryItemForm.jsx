@@ -479,11 +479,12 @@ export default function ItineraryItemForm({
   return (
     <form
       onSubmit={submit}
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5"
+      className="mint-panel overflow-hidden"
     >
-      <div className="border-b border-slate-100 bg-slate-50 px-5 py-5">
-        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-        <p className="mt-1 text-sm text-slate-500">{description}</p>
+      <div className="border-b px-5 py-5" style={{ borderColor: "var(--color-border-subtle)" }}>
+        <p className="mint-label">Itinerary</p>
+        <h3 className="mt-2 text-lg font-semibold text-[var(--color-text)]">{title}</h3>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">{description}</p>
       </div>
 
       <div className="space-y-5 p-5">
@@ -499,7 +500,7 @@ export default function ItineraryItemForm({
                 type="date"
                 min={dateBounds?.startDate || undefined}
                 max={dateBounds?.endDate || undefined}
-                className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                className="mint-input mint-input-pill block w-full pr-12"
                 value={form.date}
                 onChange={(event) =>
                   setForm((prev) => ({
@@ -512,7 +513,7 @@ export default function ItineraryItemForm({
                 type="button"
                 aria-label="Open date picker"
                 onClick={() => openNativePicker(dateInputRef.current)}
-                className="absolute inset-y-1.5 right-1.5 inline-flex w-10 items-center justify-center rounded-md border-0 bg-emerald-50 text-emerald-700 transition-colors hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                className="absolute inset-y-1.5 right-1.5 inline-flex w-10 items-center justify-center rounded-full border-0 bg-[var(--color-brand-light)] text-[var(--color-brand-deep)] transition-colors hover:opacity-90 focus:outline-none"
               >
                 <svg
                   className="h-4 w-4"
@@ -532,7 +533,7 @@ export default function ItineraryItemForm({
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-900">
+            <label className="block text-sm font-semibold text-[var(--color-text)]">
               Time <span className="text-red-500">*</span>
             </label>
             <div className="relative mt-2">
@@ -541,7 +542,7 @@ export default function ItineraryItemForm({
                 required
                 type="time"
                 step="60"
-                className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-12 text-sm text-slate-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                className="mint-input mint-input-pill block w-full pr-12"
                 value={form.time}
                 onChange={(event) =>
                   setForm((prev) => ({
@@ -554,7 +555,7 @@ export default function ItineraryItemForm({
                 type="button"
                 aria-label="Open time picker"
                 onClick={() => openNativePicker(timeInputRef.current)}
-                className="absolute inset-y-1.5 right-1.5 inline-flex w-10 items-center justify-center rounded-md border-0 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+                className="absolute inset-y-1.5 right-1.5 inline-flex w-10 items-center justify-center rounded-full border-0 bg-[var(--color-brand-light)] text-[var(--color-brand-deep)] transition-colors hover:opacity-90 focus:outline-none"
               >
                 <svg
                   className="h-4 w-4"
@@ -575,13 +576,13 @@ export default function ItineraryItemForm({
         </div>
 
         <div className="relative" ref={locationBoxRef}>
-          <label className="block text-sm font-semibold text-slate-900">
-            Location <span className="text-red-500">*</span>
-          </label>
+            <label className="block text-sm font-semibold text-[var(--color-text)]">
+              Location <span className="text-red-500">*</span>
+            </label>
           <div className="mt-2 flex flex-col gap-2 sm:flex-row">
             <input
               required
-              className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+              className="mint-input block w-full"
               placeholder="Search location or type manually"
               value={form.location}
               onChange={(event) =>
@@ -598,19 +599,19 @@ export default function ItineraryItemForm({
               type="button"
               onClick={runSearchFromInput}
               disabled={isSearchingLocation}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 sm:py-0"
+              className="mint-pill-btn mint-btn-secondary px-3 py-3 text-xs disabled:cursor-not-allowed disabled:opacity-60 sm:py-0"
             >
               {isSearchingLocation ? "..." : "Search"}
             </button>
           </div>
 
           {locationResults.length > 0 ? (
-            <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+            <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg)] p-1 shadow-sm">
               {locationResults.map((item) => (
                 <li key={`${item.lat}-${item.lng}-${item.label}`}>
                   <button
                     type="button"
-                    className="w-full rounded-md border-0 bg-white px-3 py-2 text-left text-xs text-slate-700 shadow-none transition-colors hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full rounded-xl border-0 bg-[var(--color-bg)] px-3 py-2 text-left text-xs text-[var(--color-text-secondary)] shadow-none transition-colors hover:bg-[var(--color-bg-muted)] focus:bg-[var(--color-bg-muted)] focus:outline-none"
                     onClick={() => applyLocationSuggestion(item)}
                   >
                     {item.label}
@@ -630,22 +631,22 @@ export default function ItineraryItemForm({
 
         <div>
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <label className="block text-sm font-semibold text-slate-900">
+            <label className="block text-sm font-semibold text-[var(--color-text)]">
               Pick Location on Map
             </label>
             <button
               type="button"
               onClick={useCurrentLocation}
               disabled={isDetectingLocation}
-              className="w-full rounded-lg bg-slate-900 px-3 py-2.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:py-1.5"
+              className="mint-pill-btn mint-btn-primary w-full px-3 py-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:py-1.5"
             >
               {isDetectingLocation ? "Detecting..." : "Use Current Location"}
             </button>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             Click the map to pin exact coordinates for this stop.
           </p>
-          <div className="mt-2 h-56 overflow-hidden rounded-lg border border-slate-300">
+          <div className="mt-2 h-56 overflow-hidden rounded-2xl border border-[var(--color-border-subtle)]">
             <ItineraryLocationMap
               position={position}
               mapCenter={mapCenter}
@@ -654,7 +655,7 @@ export default function ItineraryItemForm({
               onPick={handlePickPoint}
             />
           </div>
-          <p className="mt-2 text-xs text-slate-600">
+          <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
             Coordinates:{" "}
             {position
               ? `${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}`
@@ -663,11 +664,11 @@ export default function ItineraryItemForm({
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-900">
+          <label className="block text-sm font-semibold text-[var(--color-text)]">
             Notes
           </label>
           <textarea
-            className="mt-2 block min-h-[110px] w-full resize-y rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+            className="mint-input mt-2 block min-h-[110px] w-full resize-y rounded-2xl"
             placeholder="Optional notes about this stop"
             value={form.notes}
             onChange={(event) =>
@@ -680,7 +681,7 @@ export default function ItineraryItemForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex flex-1 items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mint-pill-btn mint-btn-primary inline-flex flex-1 items-center justify-center py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? submittingLabel : submitLabel}
           </button>
@@ -688,7 +689,7 @@ export default function ItineraryItemForm({
             <button
               type="button"
               onClick={onCancel}
-              className="inline-flex flex-1 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+              className="mint-pill-btn mint-btn-secondary inline-flex flex-1 items-center justify-center py-3 text-sm"
             >
               Cancel
             </button>

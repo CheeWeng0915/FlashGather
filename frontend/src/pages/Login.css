@@ -494,3 +494,97 @@ html.dark .login-success {
   background: rgba(6, 95, 70, 0.3);
   border-color: rgba(52, 211, 153, 0.2);
 }
+
+/* Mint redesign overrides */
+.login-page {
+  background: var(--color-surface-canvas);
+}
+
+.login-page::before,
+.login-page::after,
+.login-side::before,
+.login-side::after {
+  display: none;
+}
+
+.login-shell {
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: none;
+}
+
+.login-side {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border-right: 1px solid var(--color-border);
+}
+
+.login-brand,
+.login-side-kicker,
+.login-side-text {
+  color: var(--color-text-secondary);
+}
+
+.login-side-button {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 600;
+}
+
+.login-side-button:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+}
+
+.login-card {
+  background: var(--color-surface);
+}
+
+.login-title {
+  color: var(--color-text);
+  font-weight: 650;
+}
+
+.login-inline-link {
+  color: var(--color-accent);
+}
+
+.login-field {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.login-field:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+.login-toggle {
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.login-toggle:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-muted));
+}
+
+.login-submit {
+  background: var(--color-accent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-accent) 28%, transparent);
+  letter-spacing: 0.04em;
+}
+
+.login-submit:hover:not(:disabled) {
+  background: var(--color-accent-strong);
+}
+
+html.dark .login-page {
+  background: var(--color-surface-canvas);
+}

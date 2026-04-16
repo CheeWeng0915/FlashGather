@@ -56,8 +56,8 @@ const buildUsersUrl = (searchTerm) => {
 
 const getRoleBadgeClasses = (role) =>
   role === "admin"
-    ? "bg-blue-100 text-blue-700"
-    : "bg-emerald-100 text-emerald-700";
+    ? "border border-blue-200 bg-blue-50 text-blue-700"
+    : "border border-emerald-200 bg-emerald-50 text-emerald-700";
 
 export default function UserManagement() {
   const navigate = useNavigate();
@@ -203,20 +203,19 @@ export default function UserManagement() {
     : `${users.length} ${users.length === 1 ? "user" : "users"} in the system`;
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
-          <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-800 px-5 py-8 text-white sm:px-8 sm:py-10">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.18),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(59,130,246,0.24),_transparent_45%)]"></div>
-            <div className="relative flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+    <div className="mint-page">
+      <div className="mint-content max-w-7xl">
+        <section className="mint-panel overflow-hidden">
+          <div className="mint-hero rounded-none border-0 shadow-none">
+            <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">
+                <p className="mint-label">
                   User Management
                 </p>
-                <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+                <h1 className="mt-4 text-[2.5rem] font-semibold tracking-[-0.8px]">
                   Review all FlashGather users
                 </h1>
-                <p className="mt-4 text-sm leading-7 text-slate-200">
+                <p className="mt-4 text-sm leading-7 text-[var(--color-text-muted)]">
                   Search by username or email to find admins and members without
                   exposing any password data.
                 </p>
@@ -224,7 +223,7 @@ export default function UserManagement() {
 
               <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] xl:min-w-[420px]">
                 <label className="block">
-                  <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
+                  <span className="mint-label mb-2 block">
                     Search
                   </span>
                   <input
@@ -232,14 +231,14 @@ export default function UserManagement() {
                     value={searchInput}
                     onChange={(event) => setSearchInput(event.target.value)}
                     placeholder="Search by username or email"
-                    className="w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-300 outline-none transition focus:border-white/40 focus:bg-white/15 focus:ring-4 focus:ring-white/10"
+                    className="mint-input w-full mint-input-pill"
                   />
                 </label>
 
                 <button
                   type="button"
                   onClick={handleRefresh}
-                  className="inline-flex h-12 items-center justify-center rounded-xl bg-white px-4 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-white/20 xl:self-end"
+                  className="mint-pill-btn mint-btn-primary inline-flex h-12 items-center justify-center px-4 xl:self-end"
                 >
                   Refresh
                 </button>
@@ -247,8 +246,10 @@ export default function UserManagement() {
             </div>
           </div>
 
-          <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-8">
-            <p className="text-sm font-medium text-slate-600">{summary}</p>
+          <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-muted)] px-5 py-4 sm:px-8">
+            <p className="text-sm font-medium text-[var(--color-text-secondary)]">
+              {summary}
+            </p>
           </div>
 
           <div className="px-4 py-6 sm:px-8">
@@ -256,7 +257,7 @@ export default function UserManagement() {
               <div className="flex items-center justify-center py-16">
                 <div className="text-center">
                   <svg
-                    className="mx-auto h-12 w-12 animate-spin text-blue-600"
+                    className="mx-auto h-12 w-12 animate-spin text-[var(--color-accent)]"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -274,13 +275,15 @@ export default function UserManagement() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <p className="mt-4 text-sm text-slate-600">Loading users...</p>
+                  <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+                    Loading users...
+                  </p>
                 </div>
               </div>
             ) : null}
 
             {!isLoading && loadError ? (
-              <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-8 text-center">
+              <div className="mint-card border-red-200 bg-red-50 px-6 py-8 text-center">
                 <h2 className="text-lg font-semibold text-red-800">
                   Unable to load users
                 </h2>
@@ -288,7 +291,7 @@ export default function UserManagement() {
                 <button
                   type="button"
                   onClick={handleRefresh}
-                  className="mt-5 inline-flex items-center rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                  className="mt-5 inline-flex items-center rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
                 >
                   Try Again
                 </button>
@@ -296,9 +299,9 @@ export default function UserManagement() {
             ) : null}
 
             {!isLoading && !loadError && users.length === 0 ? (
-              <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
+              <div className="mint-card border-dashed px-6 py-12 text-center">
                 <svg
-                  className="mx-auto h-12 w-12 text-slate-400"
+                  className="mx-auto h-12 w-12 text-[var(--color-text-muted)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -310,10 +313,10 @@ export default function UserManagement() {
                     d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H11a4 4 0 00-4 4v2m10 0H7m10-11a4 4 0 11-8 0 4 4 0 018 0z"
                   />
                 </svg>
-                <h2 className="mt-4 text-lg font-semibold text-slate-900">
+                <h2 className="mt-4 text-lg font-semibold text-[var(--color-text)]">
                   No users found
                 </h2>
-                <p className="mt-2 text-sm text-slate-600">
+                <p className="mt-2 text-sm text-[var(--color-text-muted)]">
                   Try another username or email search.
                 </p>
               </div>
@@ -325,14 +328,16 @@ export default function UserManagement() {
                   {users.map((user) => (
                     <article
                       key={user.id}
-                      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                      className="mint-card p-5"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h2 className="text-lg font-semibold text-slate-900">
-                            {user.username}
-                          </h2>
-                          <p className="mt-1 text-sm text-slate-600">{user.email}</p>
+                            <h2 className="text-lg font-semibold text-[var(--color-text)]">
+                              {user.username}
+                            </h2>
+                            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                              {user.email}
+                            </p>
                         </div>
                         <span
                           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`}
@@ -341,38 +346,38 @@ export default function UserManagement() {
                         </span>
                       </div>
 
-                      <dl className="mt-4 space-y-3 border-t border-slate-100 pt-4 text-sm">
+                      <dl className="mt-4 space-y-3 border-t border-[var(--color-border)] pt-4 text-sm">
                         <div className="flex justify-between gap-4">
-                          <dt className="text-slate-500">User ID</dt>
-                          <dd className="truncate text-right font-medium text-slate-900">
+                          <dt className="text-[var(--color-text-muted)]">User ID</dt>
+                          <dd className="truncate text-right font-medium text-[var(--color-text)]">
                             {user.id}
                           </dd>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <dt className="text-slate-500">Member Since</dt>
-                          <dd className="text-right font-medium text-slate-900">
+                          <dt className="text-[var(--color-text-muted)]">Member Since</dt>
+                          <dd className="text-right font-medium text-[var(--color-text)]">
                             {formatDate(user.createdAt)}
                           </dd>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <dt className="text-slate-500">Last Updated</dt>
-                          <dd className="text-right font-medium text-slate-900">
+                          <dt className="text-[var(--color-text-muted)]">Last Updated</dt>
+                          <dd className="text-right font-medium text-[var(--color-text)]">
                             {formatDate(user.updatedAt)}
                           </dd>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <dt className="text-slate-500">Actions</dt>
+                          <dt className="text-[var(--color-text-muted)]">Actions</dt>
                           <dd className="text-right">
                             {user.id === currentUserId ? (
-                              <span className="text-xs font-semibold text-slate-500">
-                                Current account
-                              </span>
+                                <span className="text-xs font-semibold text-[var(--color-text-muted)]">
+                                  Current account
+                                </span>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => handleToggleRole(user)}
                                 disabled={updatingUserId === user.id}
-                                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                 className="mint-pill-btn mint-btn-primary px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                               >
                                 {updatingUserId === user.id
                                   ? "Updating..."
@@ -387,9 +392,9 @@ export default function UserManagement() {
                 </div>
 
                 <div className="hidden overflow-x-auto md:block">
-                  <table className="min-w-full border-separate border-spacing-0 overflow-hidden rounded-2xl border border-slate-200">
+                  <table className="min-w-full border-separate border-spacing-0 overflow-hidden rounded-2xl border border-[var(--color-border)]">
                     <thead>
-                      <tr className="bg-slate-100 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      <tr className="bg-[var(--color-surface-muted)] text-left text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                         <th className="px-5 py-4">Username</th>
                         <th className="px-5 py-4">Email</th>
                         <th className="px-5 py-4">Role</th>
@@ -403,9 +408,9 @@ export default function UserManagement() {
                       {users.map((user) => (
                         <tr
                           key={user.id}
-                          className="border-t border-slate-200 bg-white text-sm text-slate-700"
+                           className="border-t border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-secondary)]"
                         >
-                          <td className="px-5 py-4 font-semibold text-slate-900">
+                          <td className="px-5 py-4 font-semibold text-[var(--color-text)]">
                             {user.username}
                           </td>
                           <td className="px-5 py-4">{user.email}</td>
@@ -416,14 +421,14 @@ export default function UserManagement() {
                               {user.role === "admin" ? "Admin" : "Member"}
                             </span>
                           </td>
-                          <td className="px-5 py-4 text-xs text-slate-500">
+                          <td className="px-5 py-4 text-xs text-[var(--color-text-muted)]">
                             {user.id}
                           </td>
                           <td className="px-5 py-4">{formatDate(user.createdAt)}</td>
                           <td className="px-5 py-4">{formatDate(user.updatedAt)}</td>
                           <td className="px-5 py-4">
                             {user.id === currentUserId ? (
-                              <span className="text-xs font-semibold text-slate-500">
+                               <span className="text-xs font-semibold text-[var(--color-text-muted)]">
                                 Current account
                               </span>
                             ) : (
@@ -431,7 +436,7 @@ export default function UserManagement() {
                                 type="button"
                                 onClick={() => handleToggleRole(user)}
                                 disabled={updatingUserId === user.id}
-                                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                 className="mint-pill-btn mint-btn-primary px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                               >
                                 {updatingUserId === user.id
                                   ? "Updating..."

@@ -15,24 +15,19 @@ import {
 
 function AdminHomePage() {
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto flex w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-        <section className="w-full overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
-          <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-800 px-5 py-8 text-white sm:px-8 sm:py-12">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.18),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.24),_transparent_45%)]"></div>
-            <div className="relative max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200">
-                FlashGather Admin
-              </p>
-              <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-                Welcome to Admin Panel
-              </h1>
-              <p className="mt-4 text-sm leading-7 text-slate-200">
-                Manage your event operations from one place. Use the Events page
-                in the sidebar to review, edit, and create gatherings for your
-                team.
-              </p>
-            </div>
+    <div className="mint-page">
+      <div className="mint-content flex w-full max-w-5xl">
+        <section className="mint-hero w-full">
+          <div className="max-w-2xl">
+            <p className="mint-label">FlashGather Admin</p>
+            <h1 className="mt-4 text-[2.5rem] font-semibold leading-[1.1] tracking-[-0.8px]">
+              Welcome to Admin Panel
+            </h1>
+            <p className="mt-4 text-base leading-7 text-[var(--color-text-muted)]">
+              Manage your event operations from one place. Use the Events page
+              in the sidebar to review, edit, and create gatherings for your
+              team.
+            </p>
           </div>
         </section>
       </div>
@@ -234,8 +229,8 @@ function MemberHomePage() {
     : "No upcoming events right now. Check History for earlier events you've joined.";
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mint-page">
+      <div className="mint-content max-w-7xl">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
@@ -258,7 +253,9 @@ function MemberHomePage() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              <p className="mt-4 text-sm text-slate-600">Loading events...</p>
+              <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+                Loading events...
+              </p>
             </div>
           </div>
         ) : (
@@ -286,7 +283,7 @@ function MemberHomePage() {
               toolbar={
                 <button
                   onClick={fetchEvents}
-                  className="group relative inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/30 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:w-auto"
+                  className="mint-pill-btn mint-btn-primary group relative inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm sm:w-auto"
                 >
                   <svg
                     className="h-4 w-4 transition-transform group-hover:rotate-180"
@@ -312,16 +309,17 @@ function MemberHomePage() {
 
             <section className="mt-10">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-900">
+                <p className="mint-label">Recommendations</p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.24px] text-[var(--color-text)]">
                   Recommended Events
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
                   Join upcoming events you are not part of yet.
                 </p>
               </div>
 
               {recommendedEvents.length === 0 ? (
-                <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-600">
+                <div className="mint-card p-8 text-center text-sm text-[var(--color-text-muted)]">
                   No recommended events right now.
                 </div>
               ) : (
@@ -332,31 +330,31 @@ function MemberHomePage() {
                     return (
                       <li
                         key={eventId}
-                        className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                        className="mint-card p-6"
                       >
-                        <h3 className="text-lg font-bold text-slate-900">
+                        <h3 className="text-lg font-semibold text-[var(--color-text)]">
                           {eventItem.title}
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-sm text-slate-600">
+                        <p className="mt-2 line-clamp-2 text-sm text-[var(--color-text-secondary)]">
                           {eventItem.description || "No description provided."}
                         </p>
 
                         <dl className="mt-4 space-y-2 text-sm">
                           <div className="flex items-center justify-between gap-4">
-                            <dt className="text-slate-500">Dates</dt>
-                            <dd className="font-medium text-slate-900">
+                            <dt className="text-[var(--color-text-muted)]">Dates</dt>
+                            <dd className="font-medium text-[var(--color-text)]">
                               {formatEventDates(eventItem)}
                             </dd>
                           </div>
                           <div className="flex items-center justify-between gap-4">
-                            <dt className="text-slate-500">Location</dt>
-                            <dd className="font-medium text-slate-900">
+                            <dt className="text-[var(--color-text-muted)]">Location</dt>
+                            <dd className="font-medium text-[var(--color-text)]">
                               {eventItem.location || "To be announced"}
                             </dd>
                           </div>
                           <div className="flex items-center justify-between gap-4">
-                            <dt className="text-slate-500">Participants</dt>
-                            <dd className="font-medium text-slate-900">
+                            <dt className="text-[var(--color-text-muted)]">Participants</dt>
+                            <dd className="font-medium text-[var(--color-text)]">
                               {eventItem.participantCount || 0}
                             </dd>
                           </div>
@@ -366,7 +364,7 @@ function MemberHomePage() {
                           type="button"
                           onClick={() => joinEvent(eventItem)}
                           disabled={joiningEventId === eventId}
-                          className="mt-5 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="mint-pill-btn mint-btn-primary mt-5 w-full text-sm disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {joiningEventId === eventId ? "Joining..." : "Join Event"}
                         </button>
