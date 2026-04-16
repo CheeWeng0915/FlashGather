@@ -458,3 +458,93 @@ html.dark .register-success {
   background: rgba(6, 95, 70, 0.3);
   border-color: rgba(52, 211, 153, 0.2);
 }
+
+/* Mint redesign overrides */
+.register-page {
+  background: var(--color-surface-canvas);
+}
+
+.register-page::before,
+.register-page::after,
+.register-side::before,
+.register-side::after {
+  display: none;
+}
+
+.register-shell {
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: none;
+}
+
+.register-side {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border-right: 1px solid var(--color-border);
+}
+
+.register-brand,
+.register-side-kicker,
+.register-side-text {
+  color: var(--color-text-secondary);
+}
+
+.register-side-button {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 600;
+}
+
+.register-side-button:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+}
+
+.register-card {
+  background: var(--color-surface);
+}
+
+.register-title {
+  color: var(--color-text);
+  font-weight: 650;
+}
+
+.register-field {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.register-field:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+.register-toggle {
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.register-toggle:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-muted));
+}
+
+.register-submit {
+  background: var(--color-accent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-accent) 28%, transparent);
+  letter-spacing: 0.04em;
+}
+
+.register-submit:hover:not(:disabled) {
+  background: var(--color-accent-strong);
+}
+
+html.dark .register-page {
+  background: var(--color-surface-canvas);
+}

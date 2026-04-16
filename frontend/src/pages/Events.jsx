@@ -99,8 +99,8 @@ export default function Events() {
     : "No events have been created yet.";
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mint-page">
+      <div className="mint-content max-w-7xl">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
@@ -123,7 +123,9 @@ export default function Events() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              <p className="mt-4 text-sm text-slate-600">Loading events...</p>
+              <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+                Loading events...
+              </p>
             </div>
           </div>
         ) : (
@@ -151,7 +153,7 @@ export default function Events() {
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={fetchEvents}
-                  className="group relative inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-slate-900 to-slate-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-900/30 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 sm:flex-none"
+                  className="mint-pill-btn mint-btn-primary group relative inline-flex flex-1 items-center justify-center gap-2 px-4 py-2.5 text-sm sm:flex-none"
                 >
                   <svg
                     className="h-4 w-4 transition-transform group-hover:rotate-180"
@@ -172,7 +174,7 @@ export default function Events() {
                 <Link
                   to="/new-event"
                   aria-label="Create new event"
-                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-2xl font-semibold leading-none text-white shadow-lg shadow-emerald-600/30 transition-all hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-xl hover:shadow-emerald-600/40 focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
+                  className="mint-pill-btn mint-btn-primary inline-flex h-11 w-11 shrink-0 items-center justify-center p-0 text-2xl font-semibold leading-none"
                 >
                   +
                 </Link>

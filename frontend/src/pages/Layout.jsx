@@ -1,372 +1,296 @@
-import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from "react";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   clearStoredResetPasswordState,
   clearStoredUserSession,
   getAuthHeaders,
   getStoredUserRole,
-  hasStoredUserSession
-} from '../utils/auth'
-import { API_BASE } from '../config'
+  hasStoredUserSession,
+} from "../utils/auth";
+import { API_BASE } from "../config";
 import {
   THEME_STORAGE_KEY,
   applyTheme,
   getPreferredTheme,
-  persistTheme
-} from '../utils/theme'
-import logo from '../assets/logo.jpg'
-import { useToast } from '../components/toastContext'
+  persistTheme,
+} from "../utils/theme";
+import logo from "../assets/logo.jpg";
+import { useToast } from "../components/toastContext";
 
 const menuItems = [
-  { to: '/', label: 'Home', requiresAuth: true },
-  { to: '/events', label: 'Events', requiresAuth: true, requiresAdmin: true },
-  { to: '/my-events', label: 'My Events', requiresAuth: true, requiresMember: true },
-  { to: '/users', label: 'Users', requiresAuth: true, requiresAdmin: true },
-  { to: '/history', label: 'History', requiresAuth: true, requiresMember: true },
-  { to: '/notifications', label: 'Notifications', requiresAuth: true },
-  { to: '/login', label: 'Login', guestOnly: true },
-  { to: '/register', label: 'Register', guestOnly: true }
-]
+  { to: "/", label: "Home", requiresAuth: true },
+  { to: "/events", label: "Events", requiresAuth: true, requiresAdmin: true },
+  { to: "/my-events", label: "My Events", requiresAuth: true, requiresMember: true },
+  { to: "/users", label: "Users", requiresAuth: true, requiresAdmin: true },
+  { to: "/history", label: "History", requiresAuth: true, requiresMember: true },
+  { to: "/notifications", label: "Notifications", requiresAuth: true },
+  { to: "/login", label: "Login", guestOnly: true },
+  { to: "/register", label: "Register", guestOnly: true },
+];
 
-const accountMenuItems = [
-  { to: '/profile', label: 'Profile' },
-  { to: '/change-password', label: 'Change Password' }
-]
+const accountItems = [
+  { to: "/profile", label: "Profile" },
+  { to: "/change-password", label: "Change Password" },
+];
+
+const AUTH_PAGES = new Set(["/login", "/register", "/forgot-password", "/reset-password"]);
+
+const baseNavLinkClass =
+  "flex items-center justify-between rounded-full border px-4 py-2 text-sm font-medium transition";
+
+const getNavLinkClass = (isActive) =>
+  `${baseNavLinkClass} ${
+    isActive
+      ? "border-[var(--color-brand)] bg-[var(--color-brand-light)] text-[var(--color-brand-deep)]"
+      : "border-[var(--color-border-subtle)] bg-[var(--color-bg)] text-[var(--color-text)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand-deep)]"
+  }`;
 
 export default function Layout() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { showToast } = useToast()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth)
-  const [theme, setTheme] = useState(() => getPreferredTheme())
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(() =>
-    accountMenuItems.some((item) => item.to === window.location.pathname)
-  )
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
-  const [, setAuthRevision] = useState(0)
-  const isAuthenticated = hasStoredUserSession()
-  const userRole = isAuthenticated ? getStoredUserRole() : null
-  const isAuthPage =
-    location.pathname === '/login' ||
-    location.pathname === '/register' ||
-    location.pathname === '/forgot-password' ||
-    location.pathname === '/reset-password'
-  const isMobile = viewportWidth < 900
-  const isCompactHeader = viewportWidth < 560
-  const isVerySmallHeader = viewportWidth < 420
-  const isDarkTheme = theme === 'dark'
-  const themeStyles = getThemeStyles(isDarkTheme)
-  const visibleMenuItems = menuItems.filter((item) => {
-    if (item.requiresAuth) {
-      if (!isAuthenticated) {
-        return false
-      }
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { showToast } = useToast();
+  const [theme, setTheme] = useState(() => getPreferredTheme());
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 900);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [, setAuthRevision] = useState(0);
 
-      if (item.requiresAdmin && userRole !== 'admin') {
-        return false
-      }
+  const isAuthenticated = hasStoredUserSession();
+  const userRole = isAuthenticated ? getStoredUserRole() : null;
+  const isAuthPage = AUTH_PAGES.has(location.pathname);
+  const isDarkTheme = theme === "dark";
+  const isAccountRoute = accountItems.some((item) => item.to === location.pathname);
 
-      if (item.requiresMember && userRole !== 'member') {
-        return false
-      }
+  const visibleMenuItems = useMemo(
+    () =>
+      menuItems.filter((item) => {
+        if (item.requiresAuth) {
+          if (!isAuthenticated) {
+            return false;
+          }
+          if (item.requiresAdmin && userRole !== "admin") {
+            return false;
+          }
+          if (item.requiresMember && userRole !== "member") {
+            return false;
+          }
+          return true;
+        }
 
-      return true
-    }
+        if (item.guestOnly) {
+          return !isAuthenticated;
+        }
 
-    if (item.guestOnly) {
-      return !isAuthenticated
-    }
-
-    return true
-  })
-  const isAccountSectionActive =
-    isAuthenticated &&
-    accountMenuItems.some((item) => item.to === location.pathname)
-  const shouldShowAccountSubmenu = isAccountMenuOpen || isAccountSectionActive
-  const shouldShowNavigation = !isAuthPage && visibleMenuItems.length > 0
+        return true;
+      }),
+    [isAuthenticated, userRole],
+  );
 
   useEffect(() => {
-    const onResize = () => {
-      const nextWidth = window.innerWidth
-      const mobile = nextWidth < 900
-      setViewportWidth(nextWidth)
+    applyTheme(theme);
+    persistTheme(theme);
+  }, [theme]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 900;
+      setIsMobile(mobile);
       if (!mobile) {
-        setIsSidebarOpen(false)
+        setIsSidebarOpen(false);
       }
-    }
+    };
 
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-
-  useEffect(() => {
-    applyTheme(theme)
-    persistTheme(theme)
-  }, [theme])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
-    const syncAuthState = () => {
-      setAuthRevision((value) => value + 1)
-    }
-
     const handleStorage = (event) => {
-      syncAuthState()
-
+      setAuthRevision((value) => value + 1);
       if (!event.key || event.key === THEME_STORAGE_KEY) {
-        setTheme(getPreferredTheme())
+        setTheme(getPreferredTheme());
       }
-    }
+    };
 
-    window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
-  }, [])
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   useEffect(() => {
-    let isActive = true
+    let isActive = true;
 
     const loadUnreadCount = async () => {
       if (!isAuthenticated) {
         if (isActive) {
-          setUnreadNotificationCount(0)
+          setUnreadNotificationCount(0);
         }
-        return
+        return;
       }
 
       try {
         const response = await fetch(`${API_BASE}/notifications/unread-count`, {
-          headers: getAuthHeaders()
-        })
+          headers: getAuthHeaders(),
+        });
         if (!response.ok) {
-          return
+          return;
         }
 
-        const data = await response.json()
+        const data = await response.json();
         if (!isActive) {
-          return
+          return;
         }
 
-        const unreadCount = Number.parseInt(String(data?.unreadCount || 0), 10)
-        setUnreadNotificationCount(Number.isFinite(unreadCount) && unreadCount > 0 ? unreadCount : 0)
+        const nextCount = Number.parseInt(String(data?.unreadCount || 0), 10);
+        setUnreadNotificationCount(Number.isFinite(nextCount) && nextCount > 0 ? nextCount : 0);
       } catch {
         if (isActive) {
-          setUnreadNotificationCount(0)
+          setUnreadNotificationCount(0);
         }
       }
-    }
+    };
 
-    loadUnreadCount()
-    const intervalId = window.setInterval(loadUnreadCount, 30000)
+    loadUnreadCount();
+    const intervalId = window.setInterval(loadUnreadCount, 30000);
 
     return () => {
-      isActive = false
-      window.clearInterval(intervalId)
-    }
-  }, [isAuthenticated, location.pathname])
+      isActive = false;
+      window.clearInterval(intervalId);
+    };
+  }, [isAuthenticated, location.pathname]);
 
   const handleLogout = () => {
-    clearStoredUserSession()
-    clearStoredResetPasswordState()
-    setIsSidebarOpen(false)
+    clearStoredUserSession();
+    clearStoredResetPasswordState();
+    setIsSidebarOpen(false);
     showToast({
-      type: 'success',
-      title: 'Logged Out',
-      message: 'You have been signed out successfully.'
-    })
-    navigate('/login', { replace: true })
-  }
+      type: "success",
+      title: "Logged Out",
+      message: "You have been signed out successfully.",
+    });
+    navigate("/login", { replace: true });
+  };
 
-  const toggleTheme = () => {
-    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
-  }
-
-  const brandLabel = isVerySmallHeader ? 'Flash' : 'Flash Gather'
-  const bodyLayoutStyles = shouldShowNavigation
-    ? isMobile
-      ? styles.bodyMobile
-      : styles.bodyDesktop
-    : styles.bodySingleColumn
+  const showSidebar = !isAuthPage && visibleMenuItems.length > 0;
+  const showAccountSubmenu = isAccountMenuOpen || isAccountRoute;
 
   return (
-    <div style={{ ...styles.shell, ...themeStyles.shell }}>
-      <header style={{ ...styles.header, ...themeStyles.header }}>
-        <div
-          style={{
-            ...styles.headerInner,
-            ...(isCompactHeader ? styles.headerInnerCompact : null)
-          }}
-        >
-          {shouldShowNavigation ? (
+    <div
+      className="grid h-dvh min-h-dvh grid-rows-[64px_minmax(0,1fr)_44px]"
+      style={{ background: "var(--color-bg)", color: "var(--color-text)" }}
+    >
+      <header
+        className="sticky top-0 z-40 border-b backdrop-blur"
+        style={{
+          borderColor: "var(--color-border-subtle)",
+          background: "color-mix(in srgb, var(--color-bg) 94%, transparent)",
+        }}
+      >
+        <div className="mx-auto flex h-full w-full max-w-[1200px] items-center gap-3 px-4">
+          {showSidebar ? (
             <button
               type="button"
               onClick={() => setIsSidebarOpen((value) => !value)}
+              className={`${baseNavLinkClass} w-10 justify-center px-0 ${!isMobile ? "invisible pointer-events-none" : ""}`}
               style={{
-                ...styles.menuButton,
-                ...themeStyles.menuButton,
-                ...(isMobile ? null : styles.menuButtonHidden)
+                borderColor: "var(--color-border-subtle)",
+                background: "var(--color-bg)",
+                color: "var(--color-text)",
               }}
-              aria-label="Toggle sidebar"
+              aria-label="Toggle navigation menu"
             >
-              <svg viewBox="0 0 24 24" fill="none" style={styles.menuButtonIcon} aria-hidden="true">
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-              </svg>
+              ☰
             </button>
           ) : null}
 
-          <Link
-            to="/"
-            style={{
-              ...styles.brand,
-              ...themeStyles.brand,
-              ...(isCompactHeader ? styles.brandCompact : null)
-            }}
-          >
+          <Link to="/" className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold">
             <img
               src={logo}
-              alt="Flash Gather Logo"
-              style={{ ...styles.brandLogo, ...themeStyles.brandLogo }}
+              alt="FlashGather logo"
+              className="h-9 w-9 rounded-xl border object-cover"
+              style={{ borderColor: "var(--color-border-subtle)" }}
             />
-            <span style={styles.brandText}>{brandLabel}</span>
+            <span className="truncate">FlashGather</span>
           </Link>
 
           <button
             type="button"
-            onClick={toggleTheme}
+            onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
+            className="ml-auto rounded-full border px-4 py-2 text-sm font-medium transition hover:opacity-90"
             style={{
-              ...styles.themeToggle,
-              ...themeStyles.themeToggle,
-              ...(isCompactHeader ? styles.themeToggleCompact : null)
+              borderColor: "var(--color-border-medium)",
+              background: "var(--color-bg)",
+              color: "var(--color-text)",
             }}
-            aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} mode`}
-            title={`Switch to ${isDarkTheme ? 'light' : 'dark'} mode`}
+            aria-label={`Switch to ${isDarkTheme ? "light" : "dark"} mode`}
           >
-            <span style={styles.themeToggleIcon} aria-hidden="true">
-              {isDarkTheme ? (
-                <svg viewBox="0 0 24 24" fill="none" style={styles.themeToggleSvg}>
-                  <path
-                    d="M12 3v2.5m0 13V21m9-9h-2.5M5.5 12H3m15.364 6.364l-1.768-1.768M7.404 7.404L5.636 5.636m12.728 0l-1.768 1.768M7.404 16.596l-1.768 1.768M12 16a4 4 0 100-8 4 4 0 000 8z"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" style={styles.themeToggleSvg}>
-                  <path
-                    d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-            </span>
-            {!isCompactHeader ? <span>{isDarkTheme ? 'Light' : 'Dark'}</span> : null}
+            {isDarkTheme ? "Light" : "Dark"}
           </button>
         </div>
       </header>
 
-      <div style={{ ...styles.body, ...bodyLayoutStyles }}>
-        {shouldShowNavigation && isMobile && isSidebarOpen ? (
+      <div className={`grid min-h-0 ${showSidebar ? "md:grid-cols-[250px_minmax(0,1fr)]" : "grid-cols-1"}`}>
+        {showSidebar && isMobile && isSidebarOpen ? (
           <button
             type="button"
+            className="fixed inset-0 z-30 border-0 bg-black/35"
             aria-label="Close sidebar overlay"
             onClick={() => setIsSidebarOpen(false)}
-            style={styles.overlay}
           />
         ) : null}
 
-        {shouldShowNavigation ? (
+        {showSidebar ? (
           <aside
+            className={`z-40 border-r p-4 ${
+              isMobile
+                ? `fixed left-0 top-16 h-[calc(100dvh-64px)] w-[250px] transition-transform ${
+                    isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                  }`
+                : "relative"
+            }`}
             style={{
-              ...styles.sidebar,
-              ...themeStyles.sidebar,
-              ...(isMobile ? styles.sidebarMobile : styles.sidebarDesktop),
-              ...(isMobile && isSidebarOpen ? styles.sidebarOpen : null),
-              ...(isMobile && !isSidebarOpen ? styles.sidebarClosed : null)
+              borderColor: "var(--color-border-subtle)",
+              background: "var(--color-bg)",
             }}
           >
-            <nav style={styles.menu}>
+            <nav className="grid gap-2">
               {visibleMenuItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   onClick={() => setIsSidebarOpen(false)}
-                  style={({ isActive }) => ({
-                    ...styles.menuLink,
-                    ...themeStyles.menuLink,
-                    ...(isActive ? styles.menuLinkActive : null),
-                    ...(isActive ? themeStyles.menuLinkActive : null)
-                  })}
+                  className={({ isActive }) => getNavLinkClass(isActive)}
                 >
-                  <span style={styles.menuLinkContent}>
-                    <span>{item.label}</span>
-                    {item.to === '/notifications' && unreadNotificationCount > 0 ? (
-                      <span style={styles.notificationBadge}>
-                        {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
-                      </span>
-                    ) : null}
-                  </span>
+                  <span>{item.label}</span>
+                  {item.to === "/notifications" && unreadNotificationCount > 0 ? (
+                    <span className="inline-flex min-w-[22px] items-center justify-center rounded-full bg-[#18E299] px-1.5 py-0.5 text-[11px] font-semibold text-[#0d0d0d]">
+                      {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                    </span>
+                  ) : null}
                 </NavLink>
               ))}
 
               {isAuthenticated ? (
-                <div style={styles.accountMenu}>
+                <div className="mt-3 border-t pt-3" style={{ borderColor: "var(--color-border-subtle)" }}>
                   <button
                     type="button"
                     onClick={() => setIsAccountMenuOpen((value) => !value)}
-                    style={{
-                      ...styles.menuLink,
-                      ...styles.accountMenuButton,
-                      ...themeStyles.menuLink,
-                      ...(isAccountSectionActive ? styles.menuLinkActive : null),
-                      ...(isAccountSectionActive ? themeStyles.menuLinkActive : null)
-                    }}
-                    aria-expanded={shouldShowAccountSubmenu}
+                    className={`${baseNavLinkClass} w-full justify-between border-[var(--color-border-subtle)] bg-[var(--color-bg)] text-[var(--color-text)]`}
+                    aria-expanded={showAccountSubmenu}
                     aria-controls="account-submenu"
                   >
-                    <span style={styles.accountMenuLabel}>Account</span>
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                        style={{
-                          ...styles.accountChevron,
-                          ...(shouldShowAccountSubmenu ? styles.accountChevronOpen : null)
-                        }}
-                    >
-                      <path
-                        d="M7 10l5 5 5-5"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                    <span>Account</span>
+                    <span>{showAccountSubmenu ? "▾" : "▸"}</span>
                   </button>
 
-                  {shouldShowAccountSubmenu ? (
-                    <div id="account-submenu" style={styles.accountSubmenu}>
-                      {accountMenuItems.map((item) => (
+                  {showAccountSubmenu ? (
+                    <div id="account-submenu" className="mt-2 grid gap-2">
+                      {accountItems.map((item) => (
                         <NavLink
                           key={item.to}
                           to={item.to}
                           onClick={() => setIsSidebarOpen(false)}
-                          style={({ isActive }) => ({
-                            ...styles.menuLink,
-                            ...styles.accountSubmenuItem,
-                            ...themeStyles.menuLink,
-                            ...(isActive ? styles.menuLinkActive : null),
-                            ...(isActive ? themeStyles.menuLinkActive : null)
-                          })}
+                          className={({ isActive }) => getNavLinkClass(isActive)}
                         >
                           {item.label}
                         </NavLink>
@@ -375,13 +299,7 @@ export default function Layout() {
                       <button
                         type="button"
                         onClick={handleLogout}
-                        style={{
-                          ...styles.menuLink,
-                          ...styles.accountSubmenuItem,
-                          ...themeStyles.menuLink,
-                          ...styles.menuButtonAction,
-                          ...themeStyles.menuButtonAction
-                        }}
+                        className={`${baseNavLinkClass} justify-center border-transparent bg-[#d45656] text-white hover:opacity-90`}
                       >
                         Logout
                       </button>
@@ -393,383 +311,17 @@ export default function Layout() {
           </aside>
         ) : null}
 
-        <main
-          style={{
-            ...styles.main,
-            ...(isMobile ? styles.mainMobile : null),
-            ...(isAuthPage ? styles.mainAuth : null)
-          }}
-        >
+        <main className={`min-w-0 overflow-y-auto ${isAuthPage ? "p-0" : "p-0 md:p-2"}`}>
           <Outlet />
         </main>
       </div>
 
-      <footer style={{ ...styles.footer, ...themeStyles.footer }}>
+      <footer
+        className="flex items-center justify-center border-t px-4 text-[0.81rem]"
+        style={{ borderColor: "var(--color-border-subtle)", color: "var(--color-text-muted)" }}
+      >
         <small>(c) {new Date().getFullYear()} FlashGather. All rights reserved.</small>
       </footer>
     </div>
-  )
+  );
 }
-
-const styles = {
-  shell: {
-    height: '100dvh',
-    minHeight: '100dvh',
-    display: 'grid',
-    gridTemplateRows: '60px minmax(0, 1fr) 42px',
-    backgroundColor: '#f8fafc',
-    color: '#0f172a',
-    overflow: 'hidden'
-  },
-  header: {
-    borderBottom: '1px solid #e2e8f0',
-    backgroundColor: '#ffffff',
-    position: 'sticky',
-    top: 0,
-    zIndex: 40
-  },
-  headerInner: {
-    maxWidth: '1160px',
-    width: '100%',
-    height: '100%',
-    margin: '0 auto',
-    padding: '0 14px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    minWidth: 0
-  },
-  headerInnerCompact: {
-    padding: '0 10px',
-    gap: '8px'
-  },
-  menuButton: {
-    border: '1px solid #cbd5e1',
-    borderRadius: '8px',
-    width: '36px',
-    height: '36px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
-    color: '#334155',
-    cursor: 'pointer'
-  },
-  menuButtonIcon: {
-    width: '18px',
-    height: '18px',
-    display: 'block'
-  },
-  menuButtonHidden: {
-    visibility: 'hidden',
-    pointerEvents: 'none'
-  },
-  brand: {
-    textDecoration: 'none',
-    color: '#0f172a',
-    fontWeight: 800,
-    fontSize: '1rem',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '10px',
-    minWidth: 0,
-    flex: '1 1 auto'
-  },
-  brandCompact: {
-    gap: '8px'
-  },
-  brandText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  },
-  brandLogo: {
-    width: '36px',
-    height: '36px',
-    objectFit: 'cover',
-    borderRadius: '10px',
-    border: '1px solid #e2e8f0',
-    display: 'block'
-  },
-  themeToggle: {
-    marginLeft: 'auto',
-    minHeight: '38px',
-    padding: '0 14px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    borderRadius: '999px',
-    fontSize: '0.9rem',
-    fontWeight: 700,
-    transition: 'transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease',
-    flex: '0 0 auto'
-  },
-  themeToggleCompact: {
-    minWidth: '38px',
-    padding: '0 10px'
-  },
-  themeToggleIcon: {
-    display: 'inline-flex',
-    width: '16px',
-    height: '16px'
-  },
-  themeToggleSvg: {
-    width: '100%',
-    height: '100%',
-    display: 'block'
-  },
-  body: {
-    display: 'grid',
-    minHeight: 0,
-    position: 'relative',
-    overflow: 'hidden'
-  },
-  bodyDesktop: {
-    gridTemplateColumns: '232px minmax(0, 1fr)'
-  },
-  bodyMobile: {
-    gridTemplateColumns: '1fr'
-  },
-  bodySingleColumn: {
-    gridTemplateColumns: 'minmax(0, 1fr)'
-  },
-  overlay: {
-    position: 'fixed',
-    inset: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
-    border: 0,
-    zIndex: 30
-  },
-  sidebar: {
-    borderRight: '1px solid #e2e8f0',
-    backgroundColor: '#ffffff',
-    padding: '14px',
-    zIndex: 35,
-    transition: 'transform 0.2s ease',
-    overflowY: 'auto'
-  },
-  sidebarDesktop: {
-    position: 'relative',
-    transform: 'translateX(0)'
-  },
-  sidebarMobile: {
-    position: 'fixed',
-    top: '60px',
-    left: 0,
-    width: 'min(272px, calc(100vw - 24px))',
-    height: 'calc(100dvh - 60px)'
-  },
-  sidebarOpen: {
-    transform: 'translateX(0)'
-  },
-  sidebarClosed: {
-    transform: 'translateX(-100%)',
-    visibility: 'hidden',
-    pointerEvents: 'none'
-  },
-  menu: {
-    display: 'grid',
-    gap: '8px'
-  },
-  accountMenu: {
-    display: 'grid',
-    gap: '8px'
-  },
-  menuLink: {
-    textDecoration: 'none',
-    color: '#334155',
-    padding: '9px 11px',
-    borderRadius: '8px',
-    fontWeight: 600,
-    fontSize: '0.92rem'
-  },
-  menuLinkContent: {
-    display: 'inline-flex',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '8px'
-  },
-  notificationBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: '22px',
-    padding: '0 6px',
-    height: '22px',
-    borderRadius: '999px',
-    fontSize: '0.72rem',
-    fontWeight: 700,
-    color: '#ffffff',
-    backgroundColor: '#2563eb'
-  },
-  accountMenuButton: {
-    width: '100%',
-    border: 0,
-    background: 'transparent',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '10px',
-    textAlign: 'left'
-  },
-  accountMenuLabel: {
-    minWidth: 0
-  },
-  accountChevron: {
-    width: '16px',
-    height: '16px',
-    flex: '0 0 auto',
-    transition: 'transform 0.18s ease'
-  },
-  accountChevronOpen: {
-    transform: 'rotate(180deg)'
-  },
-  accountSubmenu: {
-    display: 'grid',
-    gap: '8px',
-    paddingLeft: '12px'
-  },
-  accountSubmenuItem: {
-    fontSize: '0.9rem'
-  },
-  menuButtonAction: {
-    border: 0,
-    width: '100%',
-    backgroundColor: '#fee2e2',
-    color: '#b91c1c',
-    textAlign: 'left',
-    cursor: 'pointer'
-  },
-  menuLinkActive: {
-    backgroundColor: '#e2e8f0',
-    color: '#0f172a'
-  },
-  main: {
-    padding: '14px',
-    minWidth: 0,
-    minHeight: 0,
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    overscrollBehavior: 'contain'
-  },
-  mainMobile: {
-    padding: '12px'
-  },
-  mainAuth: {
-    padding: 0
-  },
-  footer: {
-    borderTop: '1px solid #e2e8f0',
-    backgroundColor: '#ffffff',
-    color: '#475569',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0 14px',
-    fontSize: '0.82rem'
-  }
-}
-
-const getThemeStyles = (isDarkTheme) =>
-  isDarkTheme
-    ? {
-        shell: {
-          backgroundColor: '#020617',
-          color: '#e2e8f0'
-        },
-        header: {
-          borderBottom: '1px solid #1e293b',
-          backgroundColor: 'rgba(2, 6, 23, 0.9)',
-          backdropFilter: 'blur(18px)'
-        },
-        menuButton: {
-          border: '1px solid #334155',
-          backgroundColor: '#0f172a',
-          color: '#e2e8f0'
-        },
-        brand: {
-          color: '#f8fafc'
-        },
-        brandLogo: {
-          border: '1px solid #334155',
-          boxShadow: '0 10px 24px rgba(15, 23, 42, 0.32)'
-        },
-        themeToggle: {
-          border: '1px solid #334155',
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.96))',
-          color: '#f8fafc',
-          boxShadow: '0 10px 28px rgba(15, 23, 42, 0.3)'
-        },
-        sidebar: {
-          borderRight: '1px solid #1e293b',
-          backgroundColor: 'rgba(2, 6, 23, 0.94)'
-        },
-        menuLink: {
-          color: '#cbd5e1'
-        },
-        menuButtonAction: {
-          backgroundColor: 'rgba(127, 29, 29, 0.38)',
-          color: '#fecaca'
-        },
-        menuLinkActive: {
-          backgroundColor: '#1e293b',
-          color: '#f8fafc'
-        },
-        footer: {
-          borderTop: '1px solid #1e293b',
-          backgroundColor: 'rgba(2, 6, 23, 0.92)',
-          color: '#94a3b8'
-        }
-      }
-    : {
-        shell: {
-          backgroundColor: '#f8fafc',
-          color: '#0f172a'
-        },
-        header: {
-          borderBottom: '1px solid #e2e8f0',
-          backgroundColor: 'rgba(255, 255, 255, 0.94)',
-          backdropFilter: 'blur(18px)'
-        },
-        menuButton: {
-          border: '1px solid #cbd5e1',
-          backgroundColor: '#ffffff',
-          color: '#334155'
-        },
-        brand: {
-          color: '#0f172a'
-        },
-        brandLogo: {
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 10px 22px rgba(15, 23, 42, 0.08)'
-        },
-        themeToggle: {
-          border: '1px solid #cbd5e1',
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.98))',
-          color: '#0f172a',
-          boxShadow: '0 10px 24px rgba(15, 23, 42, 0.08)'
-        },
-        sidebar: {
-          borderRight: '1px solid #e2e8f0',
-          backgroundColor: 'rgba(255, 255, 255, 0.96)'
-        },
-        menuLink: {
-          color: '#334155'
-        },
-        menuButtonAction: {
-          backgroundColor: '#fee2e2',
-          color: '#b91c1c'
-        },
-        menuLinkActive: {
-          backgroundColor: '#e2e8f0',
-          color: '#0f172a'
-        },
-        footer: {
-          borderTop: '1px solid #e2e8f0',
-          backgroundColor: 'rgba(255, 255, 255, 0.94)',
-          color: '#475569'
-        }
-      }

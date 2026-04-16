@@ -236,14 +236,14 @@ export default function EventForm({
   return (
     <form
       onSubmit={submit}
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5"
+      className="mint-panel overflow-hidden"
     >
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-500 to-blue-600 px-5 py-6 sm:px-6 sm:py-8">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
+      <div className="relative overflow-hidden border-b px-5 py-6 sm:px-6 sm:py-8" style={{ borderColor: "var(--color-border-subtle)" }}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(24,226,153,0.18),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(24,226,153,0.1),_transparent_42%)]"></div>
         <div className="relative">
-          <div className="inline-flex items-center justify-center rounded-xl bg-white/20 p-2.5 backdrop-blur-sm">
+          <div className="inline-flex items-center justify-center rounded-full bg-[var(--color-brand-light)] p-2.5">
             <svg
-              className="h-6 w-6 text-white"
+              className="h-6 w-6 text-[var(--color-brand-deep)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -256,19 +256,20 @@ export default function EventForm({
               />
             </svg>
           </div>
-          <h2 className="mt-4 text-2xl font-bold text-white">{heading}</h2>
-          <p className="mt-1 text-sm text-emerald-50">{subheading}</p>
+          <p className="mint-label mt-4">Event Form</p>
+          <h2 className="mt-2 text-[1.75rem] font-semibold tracking-[-0.24px] text-[var(--color-text)]">{heading}</h2>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">{subheading}</p>
         </div>
       </div>
 
       <div className="space-y-5 p-4 sm:p-6">
         <div>
-          <label className="block text-sm font-semibold text-slate-900">
+          <label className="block text-sm font-medium text-[var(--color-text)]">
             Event Title <span className="text-red-500">*</span>
           </label>
           <input
             required
-            className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+            className="mint-input mt-2 block w-full"
             placeholder="e.g., Kuala Lumpur Company Trip"
             value={form.title}
             onChange={(event) =>
@@ -279,13 +280,13 @@ export default function EventForm({
 
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-semibold text-slate-900">
+            <label className="block text-sm font-medium text-[var(--color-text)]">
               Start Date <span className="text-red-500">*</span>
             </label>
             <input
               required
               type="date"
-              className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+              className="mint-input mt-2 block w-full mint-input-pill"
               value={form.startDate}
               max={form.endDate || undefined}
               onChange={(event) =>
@@ -298,13 +299,13 @@ export default function EventForm({
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-900">
+            <label className="block text-sm font-medium text-[var(--color-text)]">
               End Date <span className="text-red-500">*</span>
             </label>
             <input
               required
               type="date"
-              className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+              className="mint-input mt-2 block w-full mint-input-pill"
               value={form.endDate}
               min={form.startDate || undefined}
               onChange={(event) =>
@@ -318,11 +319,11 @@ export default function EventForm({
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-900">
+          <label className="block text-sm font-medium text-[var(--color-text)]">
             Description
           </label>
           <textarea
-            className="mt-2 block min-h-[120px] w-full resize-y rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+            className="mint-input mt-2 block min-h-[120px] w-full resize-y rounded-2xl"
             placeholder="What's this event about?"
             value={form.description}
             onChange={(event) =>
@@ -332,12 +333,12 @@ export default function EventForm({
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-900">
+          <label className="block text-sm font-medium text-[var(--color-text)]">
             Participants
           </label>
-          <div className="mt-2 space-y-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+          <div className="mint-card mt-2 space-y-3 p-4">
             <input
-              className="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+              className="mint-input block w-full mint-input-pill"
               placeholder="Enter participant email"
               value={form.participantEmailInput}
               onChange={(event) =>
@@ -361,7 +362,7 @@ export default function EventForm({
                   return (
                     <span
                       key={email}
-                      className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-slate-200"
+                      className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg)] px-3 py-2 text-sm font-medium text-[var(--color-text)]"
                     >
                       {email}
                       {isOwnerEmail ? (
@@ -375,6 +376,7 @@ export default function EventForm({
                         onClick={() => handleRemoveParticipant(email)}
                         disabled={isOwnerEmail}
                         className="inline-flex h-5 w-5 items-center justify-center rounded-full text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-200 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
+                        style={{ color: "var(--color-danger)" }}
                       >
                         <svg
                           className="h-3.5 w-3.5"
@@ -399,7 +401,7 @@ export default function EventForm({
             <button
               type="button"
               onClick={handleAddParticipant}
-              className="inline-flex w-full items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-sky-500 focus:outline-none focus:ring-4 focus:ring-sky-500/20 sm:w-auto"
+              className="mint-pill-btn mint-btn-secondary inline-flex w-full items-center justify-center sm:w-auto"
             >
               Add Participant
             </button>
@@ -417,7 +419,7 @@ export default function EventForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="group relative w-full overflow-hidden rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/40 focus:outline-none focus:ring-4 focus:ring-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          className="mint-pill-btn mint-btn-primary group relative w-full overflow-hidden py-3.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="relative flex items-center justify-center gap-2">
             {isSubmitting ? (

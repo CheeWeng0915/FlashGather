@@ -172,20 +172,19 @@ export default function Notifications() {
   const unreadCount = notifications.filter((item) => !item.isRead).length;
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
-          <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-800 px-5 py-8 text-white sm:px-8 sm:py-10">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.18),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(99,102,241,0.24),_transparent_45%)]"></div>
-            <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mint-page">
+      <div className="mint-content max-w-5xl">
+        <section className="mint-panel overflow-hidden">
+          <div className="mint-hero rounded-none border-0 shadow-none">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-indigo-200">
+                <p className="mint-label">
                   Notifications
                 </p>
-                <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+                <h1 className="mt-4 text-[2.5rem] font-semibold tracking-[-0.8px]">
                   Event updates for you
                 </h1>
-                <p className="mt-3 text-sm text-slate-200">
+                <p className="mt-3 text-sm text-[var(--color-text-muted)]">
                   {unreadCount} unread {unreadCount === 1 ? "notification" : "notifications"}
                 </p>
               </div>
@@ -195,7 +194,7 @@ export default function Notifications() {
                   type="button"
                   onClick={() => loadNotifications({ silent: true })}
                   disabled={isRefreshing}
-                  className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mint-pill-btn mint-btn-secondary disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isRefreshing ? "Refreshing..." : "Refresh"}
                 </button>
@@ -203,7 +202,7 @@ export default function Notifications() {
                   type="button"
                   onClick={handleMarkAllRead}
                   disabled={isMarkingAllRead || unreadCount === 0}
-                  className="rounded-xl bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mint-pill-btn mint-btn-primary disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isMarkingAllRead ? "Marking..." : "Mark all read"}
                 </button>
@@ -215,14 +214,16 @@ export default function Notifications() {
             {isLoading ? (
               <div className="flex items-center justify-center py-16">
                 <div className="text-center">
-                  <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
-                  <p className="mt-4 text-sm text-slate-600">Loading notifications...</p>
+                  <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-accent-soft)] border-t-[var(--color-accent)]"></div>
+                  <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+                    Loading notifications...
+                  </p>
                 </div>
               </div>
             ) : null}
 
             {!isLoading && loadError ? (
-              <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-8 text-center">
+              <div className="mint-card border-red-200 bg-red-50 px-6 py-8 text-center">
                 <h2 className="text-lg font-semibold text-red-800">
                   Unable to load notifications
                 </h2>
@@ -230,7 +231,7 @@ export default function Notifications() {
                 <button
                   type="button"
                   onClick={() => loadNotifications()}
-                  className="mt-5 inline-flex items-center rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                  className="mt-5 inline-flex items-center rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
                 >
                   Try Again
                 </button>
@@ -238,9 +239,11 @@ export default function Notifications() {
             ) : null}
 
             {!isLoading && !loadError && notifications.length === 0 ? (
-              <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
-                <h2 className="text-lg font-semibold text-slate-900">No notifications yet</h2>
-                <p className="mt-2 text-sm text-slate-600">
+              <div className="mint-card border-dashed px-6 py-12 text-center">
+                <h2 className="text-lg font-semibold text-[var(--color-text)]">
+                  No notifications yet
+                </h2>
+                <p className="mt-2 text-sm text-[var(--color-text-muted)]">
                   Event updates and cancellations will appear here.
                 </p>
               </div>
@@ -253,19 +256,19 @@ export default function Notifications() {
                     key={notification.id}
                     className={`rounded-2xl border p-4 shadow-sm transition sm:p-5 ${
                       notification.isRead
-                        ? "border-slate-200 bg-white"
-                        : "border-indigo-200 bg-indigo-50/40"
+                        ? "border-[var(--color-border)] bg-[var(--color-surface)]"
+                        : "border-[var(--color-accent-soft)] bg-[var(--color-accent-soft)]/35"
                     }`}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">
+                        <p className="text-sm font-semibold text-[var(--color-text)]">
                           {notification.title}
                         </p>
-                        <p className="mt-1 text-sm text-slate-700">
+                        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
                           {notification.message}
                         </p>
-                        <p className="mt-2 text-xs text-slate-500">
+                        <p className="mt-2 text-xs text-[var(--color-text-muted)]">
                           {formatDateTime(notification.createdAt)}
                         </p>
                       </div>
@@ -275,14 +278,14 @@ export default function Notifications() {
                           type="button"
                           onClick={() => handleMarkRead(notification)}
                           disabled={markingNotificationId === notification.id}
-                          className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="mint-pill-btn mint-btn-primary inline-flex items-center justify-center px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {markingNotificationId === notification.id
                             ? "Marking..."
                             : "Mark as read"}
                         </button>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                        <span className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
                           Read
                         </span>
                       )}

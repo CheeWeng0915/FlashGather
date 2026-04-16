@@ -497,3 +497,100 @@ html.dark .profile-message-success {
   color: #bbf7d0;
   border-color: rgba(52, 211, 153, 0.24);
 }
+
+/* Mint redesign overrides */
+.profile-page {
+  background: var(--color-surface-canvas);
+}
+
+.profile-hero {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--color-text);
+}
+
+.profile-kicker,
+.profile-hero-copy > p:last-of-type,
+.profile-badge-label,
+.profile-badge-value {
+  color: var(--color-text-secondary);
+}
+
+.profile-link-primary {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.profile-link-secondary {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.profile-badge-card {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+  backdrop-filter: none;
+}
+
+.profile-avatar {
+  background: color-mix(in srgb, var(--color-accent) 22%, var(--color-surface));
+  color: var(--color-accent);
+}
+
+.profile-panel,
+.profile-state-card {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.profile-state-card p,
+.profile-panel-text,
+.profile-detail-row dt {
+  color: var(--color-text-secondary);
+}
+
+.profile-panel-header h2,
+.profile-field > span,
+.profile-detail-row dd {
+  color: var(--color-text);
+}
+
+.profile-pill {
+  border: 1px solid var(--color-accent-soft);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.profile-detail-row {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+}
+
+.profile-input {
+  border-color: var(--color-border);
+  border-radius: 999px;
+}
+
+.profile-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+.profile-toggle {
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.profile-submit {
+  border-radius: 999px;
+  background: var(--color-accent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-accent) 26%, transparent);
+}
+
+.profile-submit:hover {
+  background: var(--color-accent-strong);
+}

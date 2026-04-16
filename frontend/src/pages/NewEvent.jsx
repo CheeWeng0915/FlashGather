@@ -41,20 +41,20 @@ export default function NewEvent() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30">
-      <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mint-page">
+      <div className="mint-content max-w-3xl">
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
+            <p className="mint-label">
               Event Builder
             </p>
-            <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
+            <h1 className="mt-2 text-2xl font-semibold tracking-[-0.28px] text-[var(--color-text)] sm:text-3xl">
               Create an Event
             </h1>
           </div>
           <Link
             to={backPath}
-            className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 sm:w-auto"
+            className="mint-pill-btn mint-btn-secondary inline-flex w-full items-center justify-center px-4 py-2 text-sm sm:w-auto"
           >
             {isAdmin ? "Back to Events" : "Back to My Events"}
           </Link>

@@ -18,8 +18,11 @@ export default function EventListPanel({
     <section className="mt-8">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">{heading}</h2>
-          <p className="mt-1 text-sm text-slate-500">{summary}</p>
+          <p className="mint-label">Events</p>
+          <h2 className="mt-2 text-[1.75rem] font-semibold tracking-[-0.24px] text-[var(--color-text)]">
+            {heading}
+          </h2>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">{summary}</p>
         </div>
         {toolbar}
       </div>
@@ -27,11 +30,10 @@ export default function EventListPanel({
       {filters ? <div className="mb-6">{filters}</div> : null}
 
       {events.length === 0 ? (
-        <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center sm:p-12">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-blue-50/50"></div>
-          <div className="relative">
+        <div className="mint-card p-8 text-center sm:p-12">
+          <div>
             <svg
-              className="mx-auto h-16 w-16 text-slate-400"
+              className="mx-auto h-16 w-16 text-[#888888]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -43,10 +45,10 @@ export default function EventListPanel({
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <h3 className="mt-4 text-lg font-semibold text-slate-900">
+            <h3 className="mt-4 text-lg font-semibold text-[var(--color-text)]">
               No events yet
             </h3>
-            <p className="mt-2 text-sm text-slate-600">{emptyMessage}</p>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">{emptyMessage}</p>
           </div>
         </div>
       ) : null}
@@ -63,12 +65,12 @@ export default function EventListPanel({
           return (
             <li
               key={eventItem.id || eventItem._id}
-              className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10"
+              className="group mint-card relative overflow-hidden p-6 transition-all hover:border-[var(--color-border-medium)]"
             >
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-sky-500"></div>
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-[var(--color-brand)] opacity-70"></div>
 
               <div className="absolute right-5 top-5">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-brand-light)] px-3 py-1 text-xs font-medium text-[var(--color-brand-deep)]">
                   <svg
                     className="h-3.5 w-3.5"
                     fill="currentColor"
@@ -80,18 +82,18 @@ export default function EventListPanel({
                 </span>
               </div>
 
-              <h3 className="pr-16 text-xl font-bold leading-tight text-slate-900">
+              <h3 className="pr-16 text-xl font-semibold tracking-[-0.2px] text-[var(--color-text)]">
                 {eventItem.title}
               </h3>
-              <p className="mt-3 line-clamp-2 text-sm text-slate-600">
+              <p className="mt-3 line-clamp-2 text-sm text-[var(--color-text-secondary)]">
                 {eventItem.description || "No description added yet."}
               </p>
 
-              <dl className="mt-5 space-y-3 border-t border-slate-100 pt-4">
+              <dl className="mt-5 space-y-3 border-t pt-4" style={{ borderColor: "var(--color-border-subtle)" }}>
                 <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                  <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-bg-muted)]">
                     <svg
-                      className="h-4 w-4 text-blue-600"
+                      className="h-4 w-4 text-[var(--color-text-muted)]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -105,19 +107,19 @@ export default function EventListPanel({
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    <dt className="mint-label">
                       Event Dates
                     </dt>
-                    <dd className="mt-0.5 text-sm font-medium text-slate-900">
+                    <dd className="mt-0.5 text-sm font-medium text-[var(--color-text)]">
                       {formatDisplayDateRange(startDate, endDate)}
                     </dd>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100">
+                  <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-bg-muted)]">
                     <svg
-                      className="h-4 w-4 text-sky-600"
+                      className="h-4 w-4 text-[var(--color-text-muted)]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -131,10 +133,10 @@ export default function EventListPanel({
                     </svg>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    <dt className="mint-label">
                       Owner
                     </dt>
-                    <dd className="mt-0.5 truncate text-sm font-medium text-slate-900">
+                    <dd className="mt-0.5 truncate text-sm font-medium text-[var(--color-text)]">
                       {ownerLabel}
                     </dd>
                   </div>
@@ -148,14 +150,14 @@ export default function EventListPanel({
                       <button
                         type="button"
                         onClick={() => onOpen(eventItem)}
-                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                        className="mint-pill-btn mint-btn-secondary flex-1 px-3 py-2 text-xs"
                       >
                         View Details
                       </button>
                       <button
                         type="button"
                         disabled
-                        className="flex-1 cursor-not-allowed rounded-lg bg-slate-200 px-3 py-2 text-xs font-semibold text-slate-500"
+                        className="flex-1 cursor-not-allowed rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-muted)] px-3 py-2 text-xs font-medium text-[var(--color-text-muted)]"
                       >
                         Past Event
                       </button>
@@ -165,14 +167,14 @@ export default function EventListPanel({
                       <button
                         type="button"
                         onClick={() => onOpen(eventItem)}
-                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+                        className="mint-pill-btn mint-btn-secondary flex-1 px-3 py-2 text-xs"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => onDelete(eventItem)}
-                        className="flex-1 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+                        className="mint-pill-btn mint-btn-danger flex-1 px-3 py-2 text-xs"
                       >
                         Delete
                       </button>
@@ -183,7 +185,7 @@ export default function EventListPanel({
                     <button
                       type="button"
                       onClick={() => onOpen(eventItem)}
-                      className={`${canLeaveEvent ? "flex-1" : "w-full"} rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-700`}
+                      className={`${canLeaveEvent ? "flex-1" : "w-full"} mint-pill-btn mint-btn-primary px-3 py-2 text-xs`}
                     >
                       View Details
                     </button>
@@ -192,7 +194,7 @@ export default function EventListPanel({
                         type="button"
                         onClick={() => onLeave(eventItem)}
                         disabled={leavingEventId === currentEventId}
-                        className="flex-1 rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="mint-pill-btn mint-btn-secondary flex-1 px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {leavingEventId === currentEventId ? "Leaving..." : "Leave"}
                       </button>
@@ -201,7 +203,7 @@ export default function EventListPanel({
                 )}
               </div>
 
-              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/0 to-blue-500/0 transition-opacity group-hover:from-emerald-500/5 group-hover:to-blue-500/5"></div>
+              <div className="pointer-events-none absolute inset-0 rounded-2xl border border-transparent transition group-hover:border-[var(--color-border-medium)]"></div>
             </li>
           );
         })}
